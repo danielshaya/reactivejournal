@@ -1,7 +1,7 @@
 package org.rxrecorder.examples.fastproducerslowconsumer;
 
-import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 import org.rxrecorder.impl.PlayOptions;
 import org.rxrecorder.impl.RxRecorder;
 import org.rxrecorder.util.DSUtil;
@@ -22,12 +22,12 @@ public class FastProducerSlowConsumerWithRxRecorder {
         RxRecorder rxRecorder = new RxRecorder();
         rxRecorder.init(file, true);
 
-        SlowConsumer slowMarketDataConsumer = new SlowConsumer("MKT1", 1000);
+        SlowConsumerObserver slowMarketDataConsumer = new SlowConsumerObserver("MKT1", 1000);
 
-        FastProducer marketDataFastProducer = new FastProducer("MKT1", PublishSubject.create());
+        Subject<MarketData> marketDataSubject = PublishSubject.create();
+        FastProducer marketDataFastProducer = new FastProducer("MKT1", marketDataSubject);
         marketDataFastProducer.startPublishing(1);
-        Observable<MarketData> marketDataObservable = marketDataFastProducer.getObservable();
-        rxRecorder.recordAsync(marketDataObservable,"MKT1");
+        rxRecorder.recordAsync(marketDataSubject,"MKT1");
 
         PlayOptions options = new PlayOptions().filter("MKT1");
         rxRecorder.play(options).subscribe(slowMarketDataConsumer);

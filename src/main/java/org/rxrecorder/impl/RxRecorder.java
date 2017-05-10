@@ -1,6 +1,7 @@
 package org.rxrecorder.impl;
 
 import io.reactivex.Emitter;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -10,8 +11,9 @@ import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.DocumentContext;
 import net.openhft.chronicle.wire.ValueIn;
-import org.rxrecorder.util.QueueUtils;
 import org.rxrecorder.util.DSUtil;
+import org.rxrecorder.util.QueueUtils;
+import org.rxrecorder.util.TriConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,33 +171,66 @@ public class RxRecorder {
         new Thread(()->record(observable,filter)).start();
     }
 
+    public void recordAsync(Flowable<?> flowable, String filter){
+        new Thread(()->record(flowable,filter)).start();
+    }
+
     public void record(Observable<?> observable){
         record(observable, "");
     }
 
+    public void record(Flowable<?> flowable){
+        record(flowable, "");
+    }
+
     public void record(Observable<?> observable, String filter) {
         ChronicleQueue queue = createQueue();
-
         ExcerptAppender appender = queue.acquireAppender();
 
-        Consumer consumer = t -> appender.writeDocument(w -> {
-            w.getValueOut().int64(System.currentTimeMillis());
-            w.getValueOut().text(filter);
-            w.getValueOut().object(t);
-        });
+        TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
+        Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
+
 
         observable.subscribe(
             t-> {
-                consumer.accept(t);
+                onNextConsumer.accept(appender, filter, t);
             },
             e->LOG.error("Error whilst recording [{}]", e),
             ()-> {
                 LOG.debug("Adding end of stream token");
-                appender.writeDocument(w -> {
-                    w.getValueOut().int64(System.currentTimeMillis());
-                    w.getValueOut().text(END_OF_STREAM);
-                    w.getValueOut().object(new EndOfStream());
-                });
+                onCompleteConsumer.accept(appender);
+            });
+    }
+
+    private TriConsumer<ExcerptAppender, String, Object> getOnNextConsumerRecorder(){
+        return (a, f, v) -> a.writeDocument(w -> {
+            w.getValueOut().int64(System.currentTimeMillis());
+            w.getValueOut().text(f);
+            w.getValueOut().object(v);
+        });
+    }
+
+    private Consumer<ExcerptAppender> getOnCompleteRecorder(){
+        return a -> a.writeDocument(w -> {
+            w.getValueOut().int64(System.currentTimeMillis());
+            w.getValueOut().text(END_OF_STREAM);
+            w.getValueOut().object(new EndOfStream());
+        });
+    }
+
+    public void record(Flowable<?> flowable, String filter) {
+        ChronicleQueue queue = createQueue();
+        ExcerptAppender appender = queue.acquireAppender();
+
+        TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
+        Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
+
+        flowable.subscribe(
+            t -> onNextConsumer.accept(appender, filter, t),
+            e -> LOG.error("Error whilst recording [{}]", e),
+            () -> {
+                LOG.debug("Adding end of stream token");
+                onCompleteConsumer.accept(appender);
             });
     }
 

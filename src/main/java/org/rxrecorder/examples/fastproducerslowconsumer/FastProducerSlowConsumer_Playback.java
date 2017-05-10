@@ -24,7 +24,7 @@ public class FastProducerSlowConsumer_Playback {
                 .completeAtEndOfFile(true);
         ConnectableObservable<MarketData> observableInput = rxRecorder.play(options).publish();
 
-        SlowConsumer slowMarketDataConsumer = new SlowConsumer("MKT1", 500);
+        SlowConsumerObserver slowMarketDataConsumer = new SlowConsumerObserver("MKT1", 500);
         observableInput.subscribe(slowMarketDataConsumer);
 
         observableInput.connect();

@@ -14,7 +14,7 @@ public class FastProducerSlowConsumer_SameThreadStrategy {
     public static void main(String[] args) throws IOException {
         DSUtil.exitAfter(5000);
 
-        SlowConsumer slowMarketDataConsumer = new SlowConsumer("MKT1", 1000);
+        SlowConsumerObserver slowMarketDataConsumer = new SlowConsumerObserver("MKT1", 1000);
 
         Subject<MarketData> marketDataSubject = PublishSubject.create();
         FastProducer marketDataFastProducer = new FastProducer("MKT1", marketDataSubject);

@@ -17,7 +17,34 @@ public class QueuePlayGround {
     private static String file = "/tmp/playground";
 
     public static void main(String[] args) {
-        writeNonSerial();
+        writeThrowableToQueue();
+    }
+
+    public static void writeThrowableToQueue(){
+        final Throwable throwable;
+        try {
+            throw new RuntimeException("serialise");
+        }catch(Throwable e){
+            throwable = e;
+        }
+
+        try (ChronicleQueue queue = SingleChronicleQueueBuilder.binary(file).build()) {
+            final ExcerptAppender appender = queue.acquireAppender();
+                appender.writeDocument(w -> {
+                    w.getValueOut().int64(System.currentTimeMillis());
+                    w.getValueOut().object(throwable);
+                });
+        }
+
+        try (ChronicleQueue queue = SingleChronicleQueueBuilder.binary(file).build()) {
+            final ExcerptTailer tailer = queue.createTailer();
+            tailer.readDocument(w -> {
+                ValueIn in = w.getValueIn();
+                long time = in.int64();
+                System.out.println(in.object());
+            });
+        }
+
     }
 
     public static void writeNonSerial() {

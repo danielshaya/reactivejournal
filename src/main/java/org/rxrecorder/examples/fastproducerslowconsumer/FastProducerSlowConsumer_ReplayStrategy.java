@@ -12,7 +12,7 @@ import java.io.IOException;
 public class FastProducerSlowConsumer_ReplayStrategy {
 
     public static void main(String[] args) throws IOException {
-        SlowConsumer slowMarketDataConsumer = new SlowConsumer("MKT1", 1000);
+        SlowConsumerObserver slowMarketDataConsumer = new SlowConsumerObserver("MKT1", 1000);
 
         Subject<MarketData> marketDataSubject = ReplaySubject.create();
         FastProducer marketDataFastProducer = new FastProducer("MKT1", marketDataSubject);

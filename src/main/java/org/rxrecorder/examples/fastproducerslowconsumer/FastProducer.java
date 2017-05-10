@@ -2,6 +2,7 @@ package org.rxrecorder.examples.fastproducerslowconsumer;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.Subject;
+import org.reactivestreams.Processor;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,12 +17,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FastProducer {
     private AtomicInteger counter = new AtomicInteger(0);
     private String id;
+    private Processor<MarketData, MarketData> processor;
     private Subject<MarketData> subject;
 
 
     FastProducer(String id, Subject<MarketData> subject) {
         this.id = id;
         this.subject = subject;
+    }
+
+    FastProducer(String id, Processor<MarketData, MarketData> processor) {
+        this.id = id;
+        this.processor = processor;
     }
 
     void startPublishing(int delayMS) {
@@ -50,17 +57,16 @@ public class FastProducer {
         if(count % 1000 == 0 || logEveryItem){
             System.out.println("Published item [" + count + "] " + marketData);
         }
-        subject.onNext(marketData);
+        if(subject!=null)
+            subject.onNext(marketData);
+        else
+            processor.onNext(marketData);
     }
 
 
 //    public void stopPublishing(){
 //        LOG.info("Fast producer completing");
 //        scheduledExecutorService.shutdown();
-//        subject.onComplete();
+//        if(subject!=null)subject.onComplete();
 //    }
-
-    public Observable<MarketData> getObservable(){
-        return subject;
-    }
 }

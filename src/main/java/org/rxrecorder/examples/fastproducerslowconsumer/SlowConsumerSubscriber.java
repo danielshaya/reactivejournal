@@ -9,19 +9,19 @@ import org.rxrecorder.util.DSUtil;
 /**
  * Created by daniel on 10/04/17.
  */
-public class SlowConsumer implements Observer<MarketData> {
+public class SlowConsumerSubscriber implements Subscriber<MarketData> {
     private String id;
     private int delayMS;
     private int count;
 
-    public SlowConsumer(String id, int delayMS) {
+    public SlowConsumerSubscriber(String id, int delayMS) {
         this.id = id;
         this.delayMS = delayMS;
     }
 
     @Override
     public void onComplete() {
-        System.out.println(id + ": SlowConsumer completes");
+        System.out.println(id + ": SlowConsumerObserver completes");
     }
 
     @Override
@@ -30,13 +30,13 @@ public class SlowConsumer implements Observer<MarketData> {
     }
 
     @Override
-    public void onSubscribe(Disposable disposable) {
-        System.out.println(id + ": SlowConsumer subscribes");
+    public void onSubscribe(Subscription subscription) {
+        System.out.println(id + ": SlowConsumerObserver subscribes");
     }
 
     @Override
     public void onNext(MarketData marketData) {
         DSUtil.sleep(delayMS);
-        System.out.println(++count + ":" + id + ": SlowConsumer consumed " + marketData);
+        System.out.println(++count + ":" + id + ": SlowConsumerObserver consumed " + marketData);
     }
 }

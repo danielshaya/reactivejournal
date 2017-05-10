@@ -1,5 +1,6 @@
 package org.rxrecorder.examples.helloworld;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.observables.ConnectableObservable;
 import org.rxrecorder.impl.PlayOptions;
@@ -17,13 +18,13 @@ public class HelloWorldApp {
     private static final Logger LOG = LoggerFactory.getLogger(HelloWorldApp.class.getName());
 
     public final static String FILE_NAME = System.getProperty("filename", "/tmp/Demo");
-    public final static int INTERVAL_MS = 1000;
+    public final static int INTERVAL_MS = 10;
     public final static String INPUT_FILTER = "input";
     public final static String OUTPUT_FILTER = "output";
 
     public static void main(String[] args) throws IOException {
-        Observable observableInput =
-                Observable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
+        Flowable observableInput =
+                Flowable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
                         i->{
                             DSUtil.sleep(INTERVAL_MS);
                             return i;
