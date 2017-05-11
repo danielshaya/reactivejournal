@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +33,7 @@ public class RxRecorder {
     private String fileName;
     private ValidationResult validationResult;
     private String END_OF_STREAM = "endOfStream";
+    private String ERROR_STRING = "error";
 
     public enum Replay {REAL_TIME, FAST}
 
@@ -189,17 +191,13 @@ public class RxRecorder {
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
         Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
-
+        BiConsumer<ExcerptAppender, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         observable.subscribe(
-            t-> {
-                onNextConsumer.accept(appender, filter, t);
-            },
-            e->LOG.error("Error whilst recording [{}]", e),
-            ()-> {
-                LOG.debug("Adding end of stream token");
-                onCompleteConsumer.accept(appender);
-            });
+                t -> onNextConsumer.accept(appender, filter, t),
+                e -> onErrorConsumer.accept(appender, e),
+                () -> onCompleteConsumer.accept(appender)
+        );
     }
 
     private TriConsumer<ExcerptAppender, String, Object> getOnNextConsumerRecorder(){
@@ -212,9 +210,19 @@ public class RxRecorder {
 
     private Consumer<ExcerptAppender> getOnCompleteRecorder(){
         return a -> a.writeDocument(w -> {
+            LOG.debug("Adding end of stream token");
             w.getValueOut().int64(System.currentTimeMillis());
             w.getValueOut().text(END_OF_STREAM);
             w.getValueOut().object(new EndOfStream());
+        });
+    }
+
+    private BiConsumer<ExcerptAppender, Throwable> getOnErrorRecorder(){
+        return (a, t) -> a.writeDocument(w -> {
+            w.getValueOut().int64(System.currentTimeMillis());
+            w.getValueOut().text(ERROR_STRING);
+            //todo Throwable should go here once Chronicle bug is fixed
+            w.getValueOut().object(t.getMessage());
         });
     }
 
@@ -224,14 +232,13 @@ public class RxRecorder {
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
         Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
+        BiConsumer<ExcerptAppender, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         flowable.subscribe(
             t -> onNextConsumer.accept(appender, filter, t),
-            e -> LOG.error("Error whilst recording [{}]", e),
-            () -> {
-                LOG.debug("Adding end of stream token");
-                onCompleteConsumer.accept(appender);
-            });
+            e -> onErrorConsumer.accept(appender, e),
+            () -> onCompleteConsumer.accept(appender)
+        );
     }
 
     public void writeToFile(String fileOutput){

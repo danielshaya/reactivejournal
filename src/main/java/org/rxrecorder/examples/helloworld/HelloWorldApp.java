@@ -56,6 +56,6 @@ public class HelloWorldApp {
         //are both setup up to receive subscriptions.
         recordedObservable.connect();
         //Sometimes useful to see the recording written to a file
-        //rxRecorder.writeToFile("/tmp/Demo/demo.txt",true);
+        rxRecorder.writeToFile("/tmp/Demo/demo.txt",true);
     }
 }
