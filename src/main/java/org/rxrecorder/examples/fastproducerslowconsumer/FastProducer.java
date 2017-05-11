@@ -1,6 +1,5 @@
 package org.rxrecorder.examples.fastproducerslowconsumer;
 
-import io.reactivex.Observable;
 import io.reactivex.subjects.Subject;
 import org.reactivestreams.Processor;
 
@@ -11,10 +10,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class to publish trades
- * Created by daniel on 23/11/16.
+ * Class to publish MarketData can be used with either Observable/Flowable.
  */
-public class FastProducer {
+class FastProducer {
     private AtomicInteger counter = new AtomicInteger(0);
     private String id;
     private Processor<MarketData, MarketData> processor;

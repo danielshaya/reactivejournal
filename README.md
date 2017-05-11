@@ -2,7 +2,7 @@
 
 RxRecorder is a utility library that can be used in conjunction with RxJava.
 
-Simply put it allows any Observable to be journalled to disk using the record function:
+Simply put it allows any Observable/Flowable to be journalled to disk using the record function:
 
     rxRexcorder.record(Observable)
     
