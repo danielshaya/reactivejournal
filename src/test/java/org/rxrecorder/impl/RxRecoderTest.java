@@ -60,7 +60,7 @@ public class RxRecoderTest {
         //Only start the recording now because we want to make sure that the BytesToWordsProcessor and the rxRecorder
         //are both setup up to receive subscriptions.
         recordedObservable.connect();
-        rxRecorder.writeToFile(tmpDir + "/playTest/playTest.txt",false);
+        rxRecorder.writeToFile(tmpDir + "/playTest/playTest.txt",true);
 
         List<String> toBeTested = Files.readAllLines(Paths.get(tmpDir + "/playTest/playTest.txt"));
         List<String> controlSet = Files.readAllLines(Paths.get("src/test/resources/playTest.txt"));
@@ -84,14 +84,15 @@ public class RxRecoderTest {
 
     private String[] getFilterLinesFromFiles(List<String> lines, String filter){
          return lines.stream()
-                .map(this::removeTimeStamp)
-                .filter(s->s.equals(filter))
+                .map(this::removeTimeStampAndMessageCount)
+                .filter(s->s.contains(filter))
                 .collect(Collectors.toList())
                 .toArray(new String[0]);
     }
 
-    private String removeTimeStamp(String line){
-        return line.substring(line.indexOf("\t"));
+    private String removeTimeStampAndMessageCount(String line){
+         String[] parts = line.split("\\t");
+         return parts[2] + "\t" + parts[3];
     }
 
     @Test
@@ -112,22 +113,24 @@ public class RxRecoderTest {
         Observable<String> observableOutput = bytesToWords.process(observableInput);
 
         //Send the output stream to the recorder to be validated against the recorded output
-        Observable<ValidationResult> results = rxRecorder.validate(observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
+        RxValidator rxValidator = new RxValidator();
+        Observable<ValidationResult> results = rxValidator.validate("src/test/resources/",
+                observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
 
         CountDownLatch latch = new CountDownLatch(1);
         results.subscribe(
                 s->LOG.info(s.toString()),
                 e-> LOG.error("Problem in process test [{}]", e),
                 ()->{
-                    LOG.info("Summary[" + rxRecorder.getValidationResult().summaryResult()
-                            + "] items compared[" + rxRecorder.getValidationResult().summaryItemsCompared()
-                            + "] items valid[" + rxRecorder.getValidationResult().summaryItemsValid() +"]");
+                    LOG.info("Summary[" + rxValidator.getValidationResult().summaryResult()
+                            + "] items compared[" + rxValidator.getValidationResult().summaryItemsCompared()
+                            + "] items valid[" + rxValidator.getValidationResult().summaryItemsValid() +"]");
                     latch.countDown();
                 });
 
         observableInput.connect();
         boolean completedWithoutTimeout = latch.await(2, TimeUnit.SECONDS);
-        Assert.assertEquals(ValidationResult.Result.OK, rxRecorder.getValidationResult().getResult());
+        Assert.assertEquals(ValidationResult.Result.OK, rxValidator.getValidationResult().getResult());
         Assert.assertTrue(completedWithoutTimeout);
     }
 }

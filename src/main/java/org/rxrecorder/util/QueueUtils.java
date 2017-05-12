@@ -29,13 +29,14 @@ public class QueueUtils {
         while(tailer.readDocument(
                 w -> {
                     ValueIn in = w.getValueIn();
+                    long messageCount = in.int64();
                     long time = in.int64();
                     //todo timezone should be configurable
                     LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.of("Europe/London"));
                     String filter = in.text();
                     Object valueFromQueue = in.object();
                     try {
-                        String item = "" + dateTime + "\t" + filter + "\t" + valueFromQueue;
+                        String item = messageCount + "\t" + dateTime + "\t" + filter + "\t" + valueFromQueue;
                         fileWriter.write(item  + "\n");
                         if(toStdout) {
                             LOG.info(item);

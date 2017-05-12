@@ -3,14 +3,12 @@ package org.rxrecorder.impl;
 import io.reactivex.Emitter;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import io.reactivex.subjects.PublishSubject;
-import io.reactivex.subjects.Subject;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
-import net.openhft.chronicle.wire.DocumentContext;
 import net.openhft.chronicle.wire.ValueIn;
+import net.openhft.chronicle.wire.WireOut;
 import org.rxrecorder.util.DSUtil;
 import org.rxrecorder.util.QueueUtils;
 import org.rxrecorder.util.TriConsumer;
@@ -22,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -29,11 +28,11 @@ import java.util.function.Consumer;
  * Class to record input from Observables and playback and validate recordings.
  */
 public class RxRecorder {
-    private static final Logger LOG = LoggerFactory.getLogger(QueueUtils.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(RxRecorder.class.getName());
     private String fileName;
-    private ValidationResult validationResult;
-    private String END_OF_STREAM = "endOfStream";
-    private String ERROR_STRING = "error";
+    private String END_OF_STREAM_FILTER = "endOfStream";
+    private String ERROR_FILTER = "error";
+    private final AtomicLong messageCounter = new AtomicLong(0);
 
     public enum Replay {REAL_TIME, FAST}
 
@@ -49,6 +48,7 @@ public class RxRecorder {
 
                     boolean foundItem = tailer.readDocument(w -> {
                         ValueIn in = w.getValueIn();
+                        long messageCount = in.int64();
                         long recordedAtTime = in.int64();
                         String storedWithFilter = in.text();
 
@@ -91,7 +91,7 @@ public class RxRecorder {
     }
 
     private boolean testEndOfStream(Emitter<? super Object> s, String storedWithFilter) {
-        if (storedWithFilter.equals(END_OF_STREAM)) {
+        if (storedWithFilter.equals(END_OF_STREAM_FILTER)) {
             s.onComplete();
             return true;
         }
@@ -113,60 +113,6 @@ public class RxRecorder {
             DSUtil.sleep((int) (recordedAtTime - lastTime[0]));
         }
         //todo add configurable pause strategy
-    }
-
-    public Observable<ValidationResult> validate(Observable observable, String filter) {
-        Subject<ValidationResult> validatorPublisher = PublishSubject.create();
-        ChronicleQueue queue = SingleChronicleQueueBuilder.binary(fileName).build();
-        ExcerptTailer tailer = queue.createTailer();
-        validationResult = new ValidationResult();
-
-        observable.subscribe(generatedResult -> {
-                Object onQueue = getNextMatchingFilter(tailer, filter);
-                if (onQueue.equals(generatedResult)) {
-                    validationResult.setResult(ValidationResult.Result.OK);
-                } else {
-                    validationResult.setResult(ValidationResult.Result.BAD);
-                }
-                validationResult.setFromQueue(onQueue);
-                validationResult.setGenerated(generatedResult);
-                validatorPublisher.onNext(validationResult);
-            },
-            error -> {
-                LOG.error("error in validate [{}]", error);
-            },
-            () -> {
-                validatorPublisher.onComplete();
-                queue.close();
-            });
-
-        return validatorPublisher;
-    }
-
-    public ValidationResult getValidationResult(){
-        return validationResult;
-    }
-
-    private Object getNextMatchingFilter(ExcerptTailer tailer, String filter){
-        long index = tailer.index();
-        DocumentContext dc = tailer.readingDocument();
-
-        if(!dc.isPresent()){
-            throw new IllegalStateException("No value left on queue");
-        }
-
-        ValueIn in = dc.wire().getValueIn();
-        long time = in.int64();
-        String storedFilter = in.text();
-        Object valueFromQueue = in.object();
-
-        if(storedFilter.equals(filter)){
-            return valueFromQueue;
-        }else{
-            tailer.moveToIndex(++index);
-            return getNextMatchingFilter(tailer, filter);
-        }
-
     }
 
     public void recordAsync(Observable<?> observable, String filter){
@@ -202,28 +148,29 @@ public class RxRecorder {
 
     private TriConsumer<ExcerptAppender, String, Object> getOnNextConsumerRecorder(){
         return (a, f, v) -> a.writeDocument(w -> {
-            w.getValueOut().int64(System.currentTimeMillis());
-            w.getValueOut().text(f);
-            w.getValueOut().object(v);
+            writeObject(w, f, v);
         });
     }
 
     private Consumer<ExcerptAppender> getOnCompleteRecorder(){
         return a -> a.writeDocument(w -> {
+            writeObject(w, END_OF_STREAM_FILTER, new EndOfStream());
             LOG.debug("Adding end of stream token");
-            w.getValueOut().int64(System.currentTimeMillis());
-            w.getValueOut().text(END_OF_STREAM);
-            w.getValueOut().object(new EndOfStream());
         });
     }
 
     private BiConsumer<ExcerptAppender, Throwable> getOnErrorRecorder(){
         return (a, t) -> a.writeDocument(w -> {
-            w.getValueOut().int64(System.currentTimeMillis());
-            w.getValueOut().text(ERROR_STRING);
             //todo Throwable should go here once Chronicle bug is fixed
-            w.getValueOut().object(t.getMessage());
+            writeObject(w, ERROR_FILTER, t.getMessage());
         });
+    }
+
+    private void writeObject(WireOut wireOut, String filter, Object obj){
+        wireOut.getValueOut().int64(messageCounter.incrementAndGet());
+        wireOut.getValueOut().int64(System.currentTimeMillis());
+        wireOut.getValueOut().text(filter);
+        wireOut.getValueOut().object(obj);
     }
 
     public void record(Flowable<?> flowable, String filter) {
@@ -252,8 +199,7 @@ public class RxRecorder {
             try {
                 QueueUtils.writeQueueToFile(tailer, fileOutput, toStdout);
             } catch (IOException e) {
-                //todo log this
-                e.printStackTrace();
+                LOG.error("Error writing to file", e);
             }
         }
         LOG.info("Writing to fileName complete");

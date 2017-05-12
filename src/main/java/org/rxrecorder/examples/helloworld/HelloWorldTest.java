@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.rxrecorder.impl.PlayOptions;
 import org.rxrecorder.impl.RxRecorder;
+import org.rxrecorder.impl.RxValidator;
 import org.rxrecorder.impl.ValidationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,22 +37,24 @@ public class HelloWorldTest {
         Observable<String> observableOutput = bytesToWords.process(observableInput);
 
         //Send the output stream to the recorder to be validated against the recorded output
-        Observable<ValidationResult> results = rxRecorder.validate(observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
+        RxValidator rxValidator = new RxValidator();
+        Observable<ValidationResult> results = rxValidator.validate(HelloWorldAppCold.FILE_NAME,
+                observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
 
         CountDownLatch latch = new CountDownLatch(1);
         results.subscribe(
                 s->LOG.info(s.toString()),
                 e-> LOG.error("Problem in process test [{}]", e),
                 ()->{
-                    LOG.info("Summary[" + rxRecorder.getValidationResult().summaryResult()
-                            + "] items compared[" + rxRecorder.getValidationResult().summaryItemsCompared()
-                            + "] items valid[" + rxRecorder.getValidationResult().summaryItemsValid() +"]");
+                    LOG.info("Summary[" + rxValidator.getValidationResult().summaryResult()
+                            + "] items compared[" + rxValidator.getValidationResult().summaryItemsCompared()
+                            + "] items valid[" + rxValidator.getValidationResult().summaryItemsValid() +"]");
                     latch.countDown();
                 });
 
         observableInput.connect();
         boolean completedWithoutTimeout = latch.await(2, TimeUnit.SECONDS);
-        Assert.assertEquals(ValidationResult.Result.OK, rxRecorder.getValidationResult().getResult());
+        Assert.assertEquals(ValidationResult.Result.OK, rxValidator.getValidationResult().getResult());
         Assert.assertTrue(completedWithoutTimeout);
     }
 }
