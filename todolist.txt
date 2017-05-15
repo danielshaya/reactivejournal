@@ -18,5 +18,6 @@
 13. Work out minimum set of features for release
 16. Write tests for record, play until
 17. Consider replacing log with sout or exceptions
-19. Write the readme
+19. Write the read
+20. Should there be 2 classes RxRecorder and RxPlayer - project could be called RxJournal. Yes will do register www.rxjournal.org
 

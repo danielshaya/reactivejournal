@@ -1,11 +1,31 @@
 # RxRecorder
 
-RxRecorder is a utility library that can be used in conjunction with RxJava.
+RxRecorder enhances RxJava by facilitating record/play functionality. 
 
-Simply put it allows any Observable/Flowable to be journalled to disk using the record function:
+## Design Goals
+
+- Recording is transactional i.e. no data will be lost if the program crashes
+- Recording and playback is extremely fast
+- Recording and playback can be achieved without any gc overhead
+- RxRecorder can be eaily fitted into any RxJava project
+
+#Quick Start
+## Creating a Recorder
+
+An RxRecorder is created as follows:
+
+    RxRecorder rxRecorder = new RxRecorder(String dir, boolean clearCacheFlag)
+
+The directory is the location where the serialised file will be created
+The clearCache flag determines whether 
+
+## Recording
+RxRecorder allows any RxJava Observable/Flowable to be journalled to disk using the record function:
 
     rxRexcorder.record(Observable)
-    
+
+The 
+
 the Observable can then be played from disk using the play function:
 
     rxRecorder.play(PlayOptons)

@@ -5,12 +5,13 @@ import io.reactivex.Observable;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
-import org.rxrecorder.examples.helloworld.BytesToWordsProcessor;
-import org.rxrecorder.examples.helloworld.HelloWorldAppCold;
-import org.rxrecorder.util.DSUtil;
+import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
+import org.rxjournal.examples.helloworld.HelloWorldAppCold;
+import org.rxjournal.impl.*;
+import org.rxjournal.impl.PlayOptions.Replay;
+import org.rxjournal.util.DSUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.rxrecorder.impl.RxRecorder.Replay;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,18 +39,20 @@ public class RxRecoderTest {
                         });
 
         //Create the rxRecorder and delete any previous content by clearing the cache
-        RxRecorder rxRecorder = new RxRecorder();
-        rxRecorder.init(tmpDir +"/playTest", true);
+        RxJournal rxJournal = new RxJournal(tmpDir +"/playTest");
+        rxJournal.clearCache();
 
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
+        RxRecorder rxRecorder = rxJournal.createRxRecorder();
         rxRecorder.recordAsync(observableInput, "input");
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
 
         //Retrieve a stream of
+        RxPlayer rxPlayer = rxJournal.createRxPlayer();
         PlayOptions options = new PlayOptions().filter("input").playFromNow(true);
-        ConnectableObservable recordedObservable = rxRecorder.play(options).publish();
+        ConnectableObservable recordedObservable = rxPlayer.play(options).publish();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.
         Observable<String> observableOutput = bytesToWords.process(recordedObservable);
@@ -60,7 +63,7 @@ public class RxRecoderTest {
         //Only start the recording now because we want to make sure that the BytesToWordsProcessor and the rxRecorder
         //are both setup up to receive subscriptions.
         recordedObservable.connect();
-        rxRecorder.writeToFile(tmpDir + "/playTest/playTest.txt",true);
+        rxJournal.writeToFile(tmpDir + "/playTest/playTest.txt",true);
 
         List<String> toBeTested = Files.readAllLines(Paths.get(tmpDir + "/playTest/playTest.txt"));
         List<String> controlSet = Files.readAllLines(Paths.get("src/test/resources/playTest.txt"));
@@ -98,22 +101,22 @@ public class RxRecoderTest {
     @Test
     public void testPlayback() throws IOException, InterruptedException {
         //Create the rxRecorder but don't delete the cache that has been created.
-        RxRecorder rxRecorder = new RxRecorder();
-        rxRecorder.init("src/test/resources/", false);
-        rxRecorder.writeToFile(tmpDir +"/rctext.txt", true);
+        RxJournal rxJournal = new RxJournal("src/test/resources/");
+        rxJournal.writeToFile(tmpDir +"/rctext.txt", true);
 
         //Get the input from the recorder
+        RxPlayer rxPlayer = rxJournal.createRxPlayer();
         PlayOptions options= new PlayOptions()
                 .filter(HelloWorldAppCold.INPUT_FILTER)
                 .replayStrategy(REPLAY_STRATEGY)
                 .completeAtEndOfFile(false);
-        ConnectableObservable<Byte> observableInput = rxRecorder.play(options).publish();
+        ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
         Observable<String> observableOutput = bytesToWords.process(observableInput);
 
         //Send the output stream to the recorder to be validated against the recorded output
-        RxValidator rxValidator = new RxValidator();
+        RxValidator rxValidator = rxJournal.createRxValidator();
         Observable<ValidationResult> results = rxValidator.validate("src/test/resources/",
                 observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
 
