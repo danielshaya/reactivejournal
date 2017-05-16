@@ -25,7 +25,7 @@ program crashes
 - Recording and playback can be achieved without any gc overhead
 - RxRecorder can be eaily fitted into any RxJava project
 
-#Quick Start
+# Quick Start
 ## Creating a Journal
 
 An RxJournal is created as follows:
@@ -61,7 +61,7 @@ The data can be examined in plain ASCII using the writeToDisk function:
     
 There are 3 primary envisaged purposes for RxRecorder.
 
-##Putting it together (full code sample)
+## Putting it together (full code sample)
 
 
 Full code example code org.rxrecorder.examples.HelloWorldApp.
