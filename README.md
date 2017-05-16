@@ -1,6 +1,6 @@
 # RxJournal
 
-RxJournal augments the popular RxJava library by adding functionality to record
+RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding functionality to record
 and play reactive streams. 
 
 ## Primary Motivations Behind RxJournal
