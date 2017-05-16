@@ -12,16 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Created by daniel on 12/05/17.
+ * Class to help in validating data in rxJournal during testing.
  */
 public class RxValidator {
     private static final Logger LOG = LoggerFactory.getLogger(RxValidator.class.getName());
-    public ValidationResult validationResult;
-    private RxJournal rxJournal;
-
-    RxValidator(RxJournal rxJournal){
-        this.rxJournal = rxJournal;
-    }
+    private ValidationResult validationResult;
 
     public Observable<ValidationResult> validate(String fileName, Observable observable, String filter) {
         Subject<ValidationResult> validatorPublisher = PublishSubject.create();

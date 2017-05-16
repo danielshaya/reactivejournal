@@ -18,6 +18,8 @@ import java.nio.file.Paths;
  */
 public class RxJournal {
     private static final Logger LOG = LoggerFactory.getLogger(RxJournal.class.getName());
+    static final String END_OF_STREAM_FILTER = "endOfStream";
+    static final String ERROR_FILTER = "error";
     private String dir;
 
     public RxJournal(String dir){
@@ -33,7 +35,7 @@ public class RxJournal {
     }
 
     public RxValidator createRxValidator(){
-        return new RxValidator(this);
+        return new RxValidator();
     }
 
     public void clearCache() throws IOException {

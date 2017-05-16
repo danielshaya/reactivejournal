@@ -1,7 +1,7 @@
 package org.rxjournal.impl;
 
 /**
- * Created by daniel on 19/04/17.
+ * ValidationResult holds the results of a validation carried out by RxValidator
  */
 public class ValidationResult<T> {
     public enum Result {OK, BAD}

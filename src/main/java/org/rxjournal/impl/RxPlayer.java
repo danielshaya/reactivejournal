@@ -6,20 +6,11 @@ import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.wire.ValueIn;
 import org.rxjournal.util.DSUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Class to record input from Observables and playback and validate recordings.
+ * Class to playback data recorded into RxJournal.
  */
 public class RxPlayer {
-    private static final Logger LOG = LoggerFactory.getLogger(RxPlayer.class.getName());
-    private final AtomicLong messageCounter = new AtomicLong(0);
-    private String dir;
-    private String END_OF_STREAM_FILTER = "endOfStream";
-    private String ERROR_FILTER = "error";
     private RxJournal rxJournal;
 
     RxPlayer(RxJournal rxJournal) {
@@ -81,7 +72,7 @@ public class RxPlayer {
     }
 
     private boolean testEndOfStream(Emitter<? super Object> s, String storedWithFilter) {
-        if (storedWithFilter.equals(END_OF_STREAM_FILTER)) {
+        if (storedWithFilter.equals(RxJournal.END_OF_STREAM_FILTER)) {
             s.onComplete();
             return true;
         }

@@ -14,14 +14,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * Class to record input from Observables and playback and validate recordings.
+ * Class to record input into RxJournal.
  */
 public class RxRecorder {
     private static final Logger LOG = LoggerFactory.getLogger(RxRecorder.class.getName());
-    private final AtomicLong messageCounter = new AtomicLong(0);
+    private static final AtomicLong messageCounter = new AtomicLong(0);
     private RxJournal rxJournal;
-    private String END_OF_STREAM_FILTER = "endOfStream";
-    private String ERROR_FILTER = "error";
 
     public RxRecorder(RxJournal rxJournal) {
         this.rxJournal = rxJournal;
@@ -66,7 +64,7 @@ public class RxRecorder {
 
     private Consumer<ExcerptAppender> getOnCompleteRecorder(){
         return a -> a.writeDocument(w -> {
-            writeObject(w, END_OF_STREAM_FILTER, new EndOfStream());
+            writeObject(w, RxJournal.END_OF_STREAM_FILTER, new EndOfStream());
             LOG.debug("Adding end of stream token");
         });
     }
@@ -74,7 +72,7 @@ public class RxRecorder {
     private BiConsumer<ExcerptAppender, Throwable> getOnErrorRecorder(){
         return (a, t) -> a.writeDocument(w -> {
             //todo Throwable should go here once Chronicle bug is fixed
-            writeObject(w, ERROR_FILTER, t.getMessage());
+            writeObject(w, RxJournal.ERROR_FILTER, t.getMessage());
         });
     }
 
