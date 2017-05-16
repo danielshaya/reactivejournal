@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Created by daniel on 15/05/17.
+ * RxJournal
  */
 public class RxJournal {
     private static final Logger LOG = LoggerFactory.getLogger(RxJournal.class.getName());

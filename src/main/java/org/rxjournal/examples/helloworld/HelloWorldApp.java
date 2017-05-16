@@ -23,14 +23,14 @@ public class HelloWorldApp {
     public final static int INTERVAL_MS = 10;
     public final static String INPUT_FILTER = "input";
     public final static String OUTPUT_FILTER = "output";
+    public static final Flowable observableInput =
+            Flowable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
+                    i->{
+                        DSUtil.sleep(INTERVAL_MS);
+                        return i;
+                    });
 
     public static void main(String[] args) throws IOException {
-        Flowable observableInput =
-                Flowable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
-                        i->{
-                            DSUtil.sleep(INTERVAL_MS);
-                            return i;
-                        });
 
         //Create the rxRecorder and delete any previous content by clearing the cache
         RxJournal rxJournal = new RxJournal(FILE_NAME);

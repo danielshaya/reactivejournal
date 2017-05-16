@@ -5,17 +5,48 @@ and play reactive streams.
 
 ## Primary Motivations Behind RxJournal
 
-### Testing
+### 1. Testing
 
-Testing is a primary motivation for RxRecorder. It effectively allows developers to
-blackbox test their code by recording all inputs and outputs into their programs.
+Testing is a primary motivation for RxJournal. It effectively allows developers to
+blackbox test their code by recording all inputs and outputs in and out of their programs.
 
-It can be using for unit testing.
+One possible use case are unit tests where RxJournal recordings can be used to create
+comprehensive tests (see [RxPlayerTest] for an example where this is done in this project).
 
-It also allows users to replay production data into test systems by just copying over a file.
+Another powerful use case is to enable users to replay production data into test systems. 
+By simply copying over the journal file from a production system and replaying all or part of the file
+into a test system the exact conditions of the primary system should be able to be reproduced.
 
-### Remote Connnections
-### Slow consumers (handling back pressure)
+### 2. Remote Connnections
+
+RxJournal can be recorded on one JVM and can be replayed on a another JVM that has access to
+the file location.  
+
+The remote connection can read from the beginning of the recording or just start with live 
+updates from the recorder. The remote connection (the 'listener') can write back to the 
+journal effecting a two way conversation. There can be multiple readers and writers to the
+journal.
+
+The journal is serialised using Chronicle-Queue to a memory mapped file so
+the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
+in single digit micro seconds. 
+
+If you need to pass data between JVMs on the same machine this is not only the most efficient way 
+to do so but you will also have a full recording of the data that goes between the JVMs.
+
+### 3. Slow consumers (handling back pressure)
+
+If you have a fast producer that you can't slow down but your consumer can't keep up
+there are a few options available to your system.
+
+Most often you end up implementing strategies that hold buffers of data in memory until the
+consumer catches up. The problem with those sort of strategies are one, if your process
+crashes you lose all the data in your buffer, if you need to consume the fast data in a 
+transactional manner this will not be an option. Two, you may run out of memory if the 
+buffers get really big. At the very least you will probably need to run your JVM with a large
+memory setting that many be ineffecient. For latency sensitive applications it will 
+put pressure on the GC.
+
 
 ## Design Goals
 
