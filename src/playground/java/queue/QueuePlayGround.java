@@ -32,7 +32,7 @@ public class QueuePlayGround {
             final ExcerptAppender appender = queue.acquireAppender();
                 appender.writeDocument(w -> {
                     w.getValueOut().int64(System.currentTimeMillis());
-                    w.getValueOut().object(throwable);
+                    w.getValueOut().throwable(throwable);
                 });
         }
 
@@ -41,7 +41,9 @@ public class QueuePlayGround {
             tailer.readDocument(w -> {
                 ValueIn in = w.getValueIn();
                 long time = in.int64();
-                System.out.println(in.object());
+                Throwable t = in.throwable(true);
+                t.printStackTrace();
+                System.out.println(t);
             });
         }
 

@@ -27,7 +27,7 @@ public class RxPlayerTest {
     public void testPlay() throws IOException, InterruptedException {
         //Create the rxRecorder but don't delete the cache that has been created.
         RxJournal rxJournal = new RxJournal("src/test/resources/");
-        rxJournal.writeToFile(tmpDir +"/rctext.txt", true);
+        //rxJournal.writeToFile(tmpDir +"/rctext.txt", true);
 
         //Get the input from the recorder
         RxPlayer rxPlayer = rxJournal.createRxPlayer();

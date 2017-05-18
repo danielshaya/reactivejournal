@@ -29,6 +29,7 @@ public class RxPlayer {
 
                     boolean foundItem = tailer.readDocument(w -> {
                         ValueIn in = w.getValueIn();
+                        byte status = in.int8();
                         long messageCount = in.int64();
                         long recordedAtTime = in.int64();
                         String storedWithFilter = in.text();
@@ -47,7 +48,12 @@ public class RxPlayer {
                                 && (!options.playFromNow() || fromTime < recordedAtTime)) {
                             pause(options, lastTime, recordedAtTime);
 
-                            if (options.filter().equals(storedWithFilter)) {
+                            if (options.filter().equals(storedWithFilter) || RxJournal.ERROR_FILTER.equals(storedWithFilter)) {
+                                if (storedWithFilter.equals(RxJournal.ERROR_FILTER)){
+                                    subscriber.onError(getThrowable(in));
+                                    stop[0] = true;
+                                    return;
+                                }
                                 subscriber.onNext(getStoredObject(options, in));
                             }
                             lastTime[0] = recordedAtTime;
@@ -63,6 +69,12 @@ public class RxPlayer {
         });
     }
 
+    //todo need to do this until bug inChronicle is resolved.
+    private Throwable getThrowable(ValueIn in) {
+        String errorMessage = in.text();
+        return new RuntimeException(errorMessage);
+    }
+
     private boolean testPastPlayUntil(PlayOptions options, Emitter<? super Object> s, long recordedAtTime) {
         if(options.playUntil() > recordedAtTime){
             s.onComplete();
@@ -76,6 +88,7 @@ public class RxPlayer {
             s.onComplete();
             return true;
         }
+
         return false;
     }
 

@@ -46,6 +46,8 @@ public class RxValidator {
         return validatorPublisher;
     }
 
+
+
     private Object getNextMatchingFilter(ExcerptTailer tailer, String filter){
         long index = tailer.index();
         DocumentContext dc = tailer.readingDocument();
@@ -55,6 +57,7 @@ public class RxValidator {
         }
 
         ValueIn in = dc.wire().getValueIn();
+        byte status = in.int8();
         long messageCount = in.int64();
         long time = in.int64();
         String storedFilter = in.text();

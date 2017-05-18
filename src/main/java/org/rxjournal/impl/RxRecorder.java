@@ -58,13 +58,13 @@ public class RxRecorder {
 
     private TriConsumer<ExcerptAppender, String, Object> getOnNextConsumerRecorder(){
         return (a, f, v) -> a.writeDocument(w -> {
-            writeObject(w, f, v);
+            writeObject(w, f, v, RxStatus.VALID);
         });
     }
 
     private Consumer<ExcerptAppender> getOnCompleteRecorder(){
         return a -> a.writeDocument(w -> {
-            writeObject(w, RxJournal.END_OF_STREAM_FILTER, new EndOfStream());
+            writeObject(w, RxJournal.END_OF_STREAM_FILTER, new EndOfStream(), RxStatus.COMPLETE);
             LOG.debug("Adding end of stream token");
         });
     }
@@ -72,11 +72,12 @@ public class RxRecorder {
     private BiConsumer<ExcerptAppender, Throwable> getOnErrorRecorder(){
         return (a, t) -> a.writeDocument(w -> {
             //todo Throwable should go here once Chronicle bug is fixed
-            writeObject(w, RxJournal.ERROR_FILTER, t.getMessage());
+            writeObject(w, RxJournal.ERROR_FILTER, t.getMessage(), RxStatus.ERROR);
         });
     }
 
-    private void writeObject(WireOut wireOut, String filter, Object obj){
+    private void writeObject(WireOut wireOut, String filter, Object obj, byte status){
+        wireOut.getValueOut().int8(status);
         wireOut.getValueOut().int64(messageCounter.incrementAndGet());
         wireOut.getValueOut().int64(System.currentTimeMillis());
         wireOut.getValueOut().text(filter);

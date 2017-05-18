@@ -88,6 +88,6 @@ public class RxRecorderTest {
 
     private String removeTimeStampAndMessageCount(String line){
         String[] parts = line.split("\\t");
-        return parts[2] + "\t" + parts[3];
+        return parts[3] + "\t" + parts[4];
     }
 }
