@@ -29,6 +29,7 @@ public class RxErrorTest {
         );
 
         RxJournal rxJournal = new RxJournal("/tmp/testError");
+        rxJournal.writeToFile("/tmp/testError/error.txt",true);
         rxJournal.clearCache();
 
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.

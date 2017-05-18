@@ -47,11 +47,11 @@ public class RxRecorder {
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
         Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
-        BiConsumer<ExcerptAppender, Throwable> onErrorConsumer = getOnErrorRecorder();
+        TriConsumer<ExcerptAppender, String, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         observable.subscribe(
                 t -> onNextConsumer.accept(appender, filter, t),
-                e -> onErrorConsumer.accept(appender, e),
+                e -> onErrorConsumer.accept(appender, filter, e),
                 () -> onCompleteConsumer.accept(appender)
         );
     }
@@ -69,10 +69,9 @@ public class RxRecorder {
         });
     }
 
-    private BiConsumer<ExcerptAppender, Throwable> getOnErrorRecorder(){
-        return (a, t) -> a.writeDocument(w -> {
-            //todo Throwable should go here once Chronicle bug is fixed
-            writeObject(w, RxJournal.ERROR_FILTER, t.getMessage(), RxStatus.ERROR);
+    private TriConsumer<ExcerptAppender, String, Throwable> getOnErrorRecorder(){
+        return (a, f, t) -> a.writeDocument(w -> {
+            writeObject(w, f, t, RxStatus.ERROR);
         });
     }
 
@@ -81,7 +80,11 @@ public class RxRecorder {
         wireOut.getValueOut().int64(messageCounter.incrementAndGet());
         wireOut.getValueOut().int64(System.currentTimeMillis());
         wireOut.getValueOut().text(filter);
-        wireOut.getValueOut().object(obj);
+        if(status==RxStatus.ERROR){
+            wireOut.getValueOut().throwable((Throwable)obj);
+        }else {
+            wireOut.getValueOut().object(obj);
+        }
     }
 
     public void record(Flowable<?> flowable, String filter) {
@@ -90,11 +93,11 @@ public class RxRecorder {
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
         Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
-        BiConsumer<ExcerptAppender, Throwable> onErrorConsumer = getOnErrorRecorder();
+        TriConsumer<ExcerptAppender, String, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         flowable.subscribe(
             t -> onNextConsumer.accept(appender, filter, t),
-            e -> onErrorConsumer.accept(appender, e),
+            e -> onErrorConsumer.accept(appender, filter, e),
             () -> onCompleteConsumer.accept(appender)
         );
     }

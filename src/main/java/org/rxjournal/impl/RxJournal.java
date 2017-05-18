@@ -23,7 +23,6 @@ import java.time.ZoneId;
 public class RxJournal {
     private static final Logger LOG = LoggerFactory.getLogger(RxJournal.class.getName());
     static final String END_OF_STREAM_FILTER = "endOfStream";
-    static final String ERROR_FILTER = "error";
     private String dir;
 
     public RxJournal(String dir){
@@ -89,19 +88,16 @@ public class RxJournal {
     private static void writeQueueToFile(ExcerptTailer tailer, String fileName, boolean toStdout) throws IOException {
         FileWriter fileWriter = new FileWriter(fileName);
         tailer.toStart();
+        DataItemProcessor dim = new DataItemProcessor();
         while(tailer.readDocument(
                 w -> {
                     ValueIn in = w.getValueIn();
-                    byte status = in.int8();
-                    long messageCount = in.int64();
-                    long time = in.int64();
+                    dim.process(in,null);
                     //todo timezone should be configurable
-                    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.of("Europe/London"));
-                    String filter = in.text();
-                    Object valueFromQueue = in.object();
+                    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(dim.getTime()), ZoneId.of("Europe/London"));
                     try {
-                        String item = RxStatus.toString(status) + "\t" + messageCount + "\t" + dateTime + "\t"
-                                + filter + "\t" + valueFromQueue;
+                        String item = RxStatus.toString(dim.getStatus()) + "\t" + dim.getMessageCount() + "\t" + dateTime + "\t"
+                                + dim.getFilter() + "\t" + dim.getMessageCount();
                         fileWriter.write(item  + "\n");
                         if(toStdout) {
                             LOG.info(item);

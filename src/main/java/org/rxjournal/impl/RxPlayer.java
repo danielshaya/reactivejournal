@@ -12,6 +12,7 @@ import org.rxjournal.util.DSUtil;
  */
 public class RxPlayer {
     private RxJournal rxJournal;
+    private DataItemProcessor dim = new DataItemProcessor();
 
     RxPlayer(RxJournal rxJournal) {
         this.rxJournal = rxJournal;
@@ -29,34 +30,31 @@ public class RxPlayer {
 
                     boolean foundItem = tailer.readDocument(w -> {
                         ValueIn in = w.getValueIn();
-                        byte status = in.int8();
-                        long messageCount = in.int64();
-                        long recordedAtTime = in.int64();
-                        String storedWithFilter = in.text();
+                        dim.process(in, null);
 
-                        if (testEndOfStream(subscriber, storedWithFilter)) {
+                        if (testEndOfStream(subscriber, dim.getFilter())) {
                             stop[0] = true;
                             return;
                         }
 
-                        if (testPastPlayUntil(options, subscriber, recordedAtTime)){
+                        if (testPastPlayUntil(options, subscriber, dim.getTime())){
                             stop[0] = true;
                             return;
                         }
 
-                        if (options.playFrom() > recordedAtTime
-                                && (!options.playFromNow() || fromTime < recordedAtTime)) {
-                            pause(options, lastTime, recordedAtTime);
+                        if (options.playFrom() > dim.getTime()
+                                && (!options.playFromNow() || fromTime < dim.getTime())) {
+                            pause(options, lastTime, dim.getTime());
 
-                            if (options.filter().equals(storedWithFilter) || RxJournal.ERROR_FILTER.equals(storedWithFilter)) {
-                                if (storedWithFilter.equals(RxJournal.ERROR_FILTER)){
-                                    subscriber.onError(getThrowable(in));
+                            if (options.filter().equals(dim.getFilter())) {
+                                if (dim.getStatus()==RxStatus.ERROR){
+                                    subscriber.onError((Throwable)dim.getObject());
                                     stop[0] = true;
                                     return;
                                 }
-                                subscriber.onNext(getStoredObject(options, in));
+                                subscriber.onNext(dim.getObject());
                             }
-                            lastTime[0] = recordedAtTime;
+                            lastTime[0] = dim.getTime();
                         }
                     });
                     if (!foundItem && !options.completeAtEndOfFile() || stop[0]) {
@@ -67,12 +65,6 @@ public class RxPlayer {
             }
 
         });
-    }
-
-    //todo need to do this until bug inChronicle is resolved.
-    private Throwable getThrowable(ValueIn in) {
-        String errorMessage = in.text();
-        return new RuntimeException(errorMessage);
     }
 
     private boolean testPastPlayUntil(PlayOptions options, Emitter<? super Object> s, long recordedAtTime) {
@@ -90,16 +82,6 @@ public class RxPlayer {
         }
 
         return false;
-    }
-
-    private Object getStoredObject(PlayOptions options, ValueIn in) {
-        Object storedObject;
-        if (options.using() != null) {
-            storedObject = in.object(options.using(), options.using().getClass());
-        } else {
-            storedObject = in.object();
-        }
-        return storedObject;
     }
 
     private void pause(PlayOptions options, long[] lastTime, long recordedAtTime) {

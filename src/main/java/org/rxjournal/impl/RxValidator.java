@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 public class RxValidator {
     private static final Logger LOG = LoggerFactory.getLogger(RxValidator.class.getName());
     private ValidationResult validationResult;
+    private DataItemProcessor dataItemProcessor = new DataItemProcessor();
 
     public Observable<ValidationResult> validate(String fileName, Observable observable, String filter) {
         Subject<ValidationResult> validatorPublisher = PublishSubject.create();
@@ -57,14 +58,10 @@ public class RxValidator {
         }
 
         ValueIn in = dc.wire().getValueIn();
-        byte status = in.int8();
-        long messageCount = in.int64();
-        long time = in.int64();
-        String storedFilter = in.text();
-        Object valueFromQueue = in.object();
+        dataItemProcessor.process(in, null);
 
-        if(storedFilter.equals(filter)){
-            return valueFromQueue;
+        if(dataItemProcessor.getFilter().equals(filter)){
+            return dataItemProcessor.getObject();
         }else{
             tailer.moveToIndex(++index);
             return getNextMatchingFilter(tailer, filter);
@@ -75,5 +72,4 @@ public class RxValidator {
     public ValidationResult getValidationResult(){
         return validationResult;
     }
-
 }
