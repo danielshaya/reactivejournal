@@ -14,8 +14,8 @@ import java.io.IOException;
  * An example class that demonstrates how use rxRecorder in with a cold Observable.
  * i.e. The Observable will only produce events in response to a subscribe.
  */
-public class HelloWorldAppCold {
-    private static final Logger LOG = LoggerFactory.getLogger(HelloWorldAppCold.class.getName());
+public class HelloWorldApp_JounalAsObserver {
+    private static final Logger LOG = LoggerFactory.getLogger(HelloWorldApp_JounalAsObserver.class.getName());
 
     public final static String FILE_NAME = System.getProperty("filename", "/tmp/Demo");
     public final static int INTERVAL_MS = 100;

@@ -16,8 +16,8 @@ import java.io.IOException;
 /**
  * Class to run BytesToWordsProcessor
  */
-public class HelloWorldApp {
-    private static final Logger LOG = LoggerFactory.getLogger(HelloWorldApp.class.getName());
+public class HelloWorldApp_JournalPlayThrough {
+    private static final Logger LOG = LoggerFactory.getLogger(HelloWorldApp_JournalPlayThrough.class.getName());
 
     public final static String FILE_NAME = System.getProperty("filename", "/tmp/Demo");
     public final static int INTERVAL_MS = 10;

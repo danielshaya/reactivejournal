@@ -6,8 +6,7 @@ import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
-import org.rxjournal.examples.helloworld.HelloWorldApp;
-import org.rxjournal.util.DSUtil;
+import org.rxjournal.examples.helloworld.HelloWorldApp_JournalPlayThrough;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +30,7 @@ public class RxRecorderTest {
     @Test
     public void recorderTest() throws IOException{
         //Flowable used to create the control run.
-        Flowable<Byte> observableInput = HelloWorldApp.observableInput;
+        Flowable<Byte> observableInput = HelloWorldApp_JournalPlayThrough.observableInput;
 
         //Create the rxRecorder and delete any previous content by clearing the cache
         RxJournal rxJournal = new RxJournal(tmpDir +"/playTest");

@@ -7,7 +7,7 @@ and play reactive streams.
 
 ### 1. Testing
 
-Testing is a primary motivation for RxJournal. It effectively allows developers to
+Testing is a primary motivation for RxJournal. RxJournal allows developers to
 blackbox test their code by recording all inputs and outputs in and out of their programs.
 
 One possible use case are unit tests where RxJournal recordings can be used to create
@@ -92,11 +92,65 @@ The data can be examined in plain ASCII using the writeToDisk function:
     
 There are 3 primary envisaged purposes for RxRecorder.
 
-## Putting it together (full code sample)
+## Putting it together with HelloWorld
 
 
-Full code example code org.rxrecorder.examples.HelloWorldApp.
+Full code example code [HelloWorldApp].
 
+```java
+    package org.rxjournal.examples.helloworld;
+    
+    import io.reactivex.Flowable;
+    import io.reactivex.Observable;
+    import org.rxjournal.impl.PlayOptions;
+    import org.rxjournal.impl.RxJournal;
+    import org.rxjournal.impl.RxPlayer;
+    import org.rxjournal.impl.RxRecorder;
+    
+    import java.io.IOException;
+    
+    /**
+     * Simple Demo Program
+     */
+    public class HelloWorld {
+        public static void main(String[] args) throws IOException {
+            //Create the rxRecorder and delete any previous content by clearing the cache
+            RxJournal rxJournal = new RxJournal("/tmp/Demo");
+            rxJournal.clearCache();
+    
+            Flowable<String> helloWorldFlowable = Flowable.just("Hello World!!");
+            //Pass the flowable into the rxRecorder which will subscribe to it and record all events.
+            RxRecorder rxRecorder = rxJournal.createRxRecorder();
+            rxRecorder.record(helloWorldFlowable);
+    
+            RxPlayer rxPlayer = rxJournal.createRxPlayer();
+            Observable recordedObservable = rxPlayer.play(new PlayOptions());
+    
+            recordedObservable.subscribe(System.out::println);
+            
+            //Sometimes useful to see the recording written to a file
+            rxJournal.writeToFile("/tmp/Demo/demo.txt",true);
+        }
+    }
+```    
+
+
+## FAQ
+
+### What types of data can be serialised by RxJournal
+
+Items that can be serialised to RXJournal are those that can be serialised to 
+Chronicle-Queue.
+
+These are:
+* AutoBoxed primitives
+* Classes implementing [Serialisable]
+* Classes implementing [Marshallable]
+
+See [here](chronicle docs) for full documentation
+
+### Threading
+ 
 Thread 1: HelloWorldApp has an Observable<Bytes> that produces a stream of bytes. 
 RxRecorder subscribes to and records the bytes that are produced. 
 
@@ -108,3 +162,7 @@ See diagram below.
 Since the input has been recorded we are able to test the BytesToWordsProcessor directly from RxRecorder without
 the original Observable<Bytes>. Furthermore since the output was recorded we can validate
 the output against the original output of the program.
+
+## Examples
+
+### HelloWorldApp

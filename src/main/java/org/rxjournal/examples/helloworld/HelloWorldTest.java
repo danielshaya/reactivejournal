@@ -23,11 +23,11 @@ public class HelloWorldTest {
     @Test
     public void testHelloWorld() throws IOException, InterruptedException {
         //Create the rxRecorder but don't delete the cache that has been created.
-        RxJournal rxJournal = new RxJournal(HelloWorldAppCold.FILE_NAME);
+        RxJournal rxJournal = new RxJournal(HelloWorldApp_JounalAsObserver.FILE_NAME);
 
         //Get the input from the recorder
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
-        PlayOptions options= new PlayOptions().filter(HelloWorldAppCold.INPUT_FILTER).replayStrategy(REPLAY_STRATEGY);
+        PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER).replayStrategy(REPLAY_STRATEGY);
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
@@ -35,8 +35,8 @@ public class HelloWorldTest {
 
         //Send the output stream to the recorder to be validated against the recorded output
         RxValidator rxValidator = rxJournal.createRxValidator();
-        Observable<ValidationResult> results = rxValidator.validate(HelloWorldAppCold.FILE_NAME,
-                observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
+        Observable<ValidationResult> results = rxValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME,
+                observableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER);
 
         CountDownLatch latch = new CountDownLatch(1);
         results.subscribe(

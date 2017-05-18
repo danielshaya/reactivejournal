@@ -5,7 +5,7 @@ import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
-import org.rxjournal.examples.helloworld.HelloWorldAppCold;
+import org.rxjournal.examples.helloworld.HelloWorldApp_JounalAsObserver;
 import org.rxjournal.impl.PlayOptions.Replay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class RxPlayerTest {
         //Get the input from the recorder
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
         PlayOptions options= new PlayOptions()
-                .filter(HelloWorldAppCold.INPUT_FILTER)
+                .filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
                 .replayStrategy(REPLAY_STRATEGY)
                 .completeAtEndOfFile(false);
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
@@ -43,7 +43,7 @@ public class RxPlayerTest {
         //Send the output stream to the recorder to be validated against the recorded output
         RxValidator rxValidator = rxJournal.createRxValidator();
         Observable<ValidationResult> results = rxValidator.validate("src/test/resources/",
-                observableOutput, HelloWorldAppCold.OUTPUT_FILTER);
+                observableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER);
 
         CountDownLatch latch = new CountDownLatch(1);
         results.subscribe(
