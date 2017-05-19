@@ -3,6 +3,22 @@
 RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
 functionality to record and replay reactive streams. 
 
+## Downloading the project
+
+### Maven
+RxJournal is a Maven project so you can clone the project and build in the usual way.
+
+The intention is for this project to make its way in Maven Central (work in progress).
+
+### Download the jar
+Go to the releases section of the project. With each release there will be an uber jar that you can download with all the RXJournal classes and dependencies.
+
+To test that it works try:
+
+````
+java -cp ./rxjournal-x.x.x.jar org.rxjournal.examples.helloworld.HelloWorld 
+````
+
 ## Primary Motivations Behind RxJournal
 
 ### 1. Testing
