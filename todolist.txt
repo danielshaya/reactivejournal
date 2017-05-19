@@ -14,10 +14,10 @@
 ------15. Implement window grouping (this will probably have to be multi-threaded - or maybe not)
 ------11. Add features to rxRecorder replay to replay from time until or for a few seconds or a number of events
 ******20. Should there be 2 classes RxRecorder and RxPlayer - project could be called RxJournal. Yes will do register www.rxjournal.org
+******5. Try more than one publisher e.g. add market data publisher (play ground)
+******21. Deal with errors and test
+******22. Add status flag to message and implement error handling
 
-5. Try more than one publisher e.g. add market data publisher (play ground)
 13. Work out minimum set of features for release
 16. Write tests for record, play until
 17. Consider replacing log with sout or exceptions
-21. Deal with errors and test
-22. Add status flag to message and implement error handling

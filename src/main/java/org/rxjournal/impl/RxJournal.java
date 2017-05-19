@@ -22,7 +22,6 @@ import java.time.ZoneId;
  */
 public class RxJournal {
     private static final Logger LOG = LoggerFactory.getLogger(RxJournal.class.getName());
-    static final String END_OF_STREAM_FILTER = "endOfStream";
     private String dir;
 
     public RxJournal(String dir){
@@ -97,7 +96,7 @@ public class RxJournal {
                     LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(dim.getTime()), ZoneId.of("Europe/London"));
                     try {
                         String item = RxStatus.toString(dim.getStatus()) + "\t" + dim.getMessageCount() + "\t" + dateTime + "\t"
-                                + dim.getFilter() + "\t" + dim.getMessageCount();
+                                + dim.getFilter() + "\t" + dim.getObject();
                         fileWriter.write(item  + "\n");
                         if(toStdout) {
                             LOG.info(item);

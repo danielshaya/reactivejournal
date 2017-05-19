@@ -32,11 +32,6 @@ public class RxPlayer {
                         ValueIn in = w.getValueIn();
                         dim.process(in, null);
 
-                        if (testEndOfStream(subscriber, dim.getFilter())) {
-                            stop[0] = true;
-                            return;
-                        }
-
                         if (testPastPlayUntil(options, subscriber, dim.getTime())){
                             stop[0] = true;
                             return;
@@ -47,6 +42,12 @@ public class RxPlayer {
                             pause(options, lastTime, dim.getTime());
 
                             if (options.filter().equals(dim.getFilter())) {
+                                if (dim.getStatus()==RxStatus.COMPLETE) {
+                                    subscriber.onComplete();
+                                    stop[0] = true;
+                                    return;
+                                }
+
                                 if (dim.getStatus()==RxStatus.ERROR){
                                     subscriber.onError((Throwable)dim.getObject());
                                     stop[0] = true;
@@ -72,15 +73,6 @@ public class RxPlayer {
             s.onComplete();
             return true;
         }
-        return false;
-    }
-
-    private boolean testEndOfStream(Emitter<? super Object> s, String storedWithFilter) {
-        if (storedWithFilter.equals(RxJournal.END_OF_STREAM_FILTER)) {
-            s.onComplete();
-            return true;
-        }
-
         return false;
     }
 

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Class to record input into RxJournal.
@@ -46,13 +47,13 @@ public class RxRecorder {
         ExcerptAppender appender = queue.acquireAppender();
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
-        Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
+        BiConsumer<ExcerptAppender, String> onCompleteConsumer = getOnCompleteRecorder();
         TriConsumer<ExcerptAppender, String, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         observable.subscribe(
                 t -> onNextConsumer.accept(appender, filter, t),
                 e -> onErrorConsumer.accept(appender, filter, e),
-                () -> onCompleteConsumer.accept(appender)
+                () -> onCompleteConsumer.accept(appender, filter)
         );
     }
 
@@ -62,9 +63,9 @@ public class RxRecorder {
         });
     }
 
-    private Consumer<ExcerptAppender> getOnCompleteRecorder(){
-        return a -> a.writeDocument(w -> {
-            writeObject(w, RxJournal.END_OF_STREAM_FILTER, new EndOfStream(), RxStatus.COMPLETE);
+    private BiConsumer<ExcerptAppender, String> getOnCompleteRecorder(){
+        return (a,f) -> a.writeDocument(w -> {
+            writeObject(w, f, new EndOfStream(), RxStatus.COMPLETE);
             LOG.debug("Adding end of stream token");
         });
     }
@@ -92,13 +93,13 @@ public class RxRecorder {
         ExcerptAppender appender = queue.acquireAppender();
 
         TriConsumer<ExcerptAppender, String, Object> onNextConsumer = getOnNextConsumerRecorder();
-        Consumer<ExcerptAppender> onCompleteConsumer = getOnCompleteRecorder();
+        BiConsumer<ExcerptAppender, String> onCompleteConsumer = getOnCompleteRecorder();
         TriConsumer<ExcerptAppender, String, Throwable> onErrorConsumer = getOnErrorRecorder();
 
         flowable.subscribe(
             t -> onNextConsumer.accept(appender, filter, t),
             e -> onErrorConsumer.accept(appender, filter, e),
-            () -> onCompleteConsumer.accept(appender)
+            () -> onCompleteConsumer.accept(appender, filter)
         );
     }
 }

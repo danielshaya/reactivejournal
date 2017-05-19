@@ -1,7 +1,7 @@
 # RxJournal
 
-RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding functionality to record
-and play reactive streams. 
+RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
+functionality to record and replay reactive streams. 
 
 ## Primary Motivations Behind RxJournal
 
@@ -10,29 +10,29 @@ and play reactive streams.
 Testing is a primary motivation for RxJournal. RxJournal allows developers to
 blackbox test their code by recording all inputs and outputs in and out of their programs.
 
-One possible use case are unit tests where RxJournal recordings can be used to create
+An obvious use case are unit tests where RxJournal recordings can be used to create
 comprehensive tests (see [RxPlayerTest] for an example where this is done in this project).
 
 Another powerful use case is to enable users to replay production data into test systems. 
 By simply copying over the journal file from a production system and replaying all or part of the file
-into a test system the exact conditions of the primary system should be able to be reproduced.
+into a test system the exact conditions of the primary system will be reproduced.
 
 ### 2. Remote Connnections
 
 RxJournal can be recorded on one JVM and can be replayed on a another JVM that has access to
-the file location.  
+the journal file location.  
 
 The remote connection can read from the beginning of the recording or just start with live 
-updates from the recorder. The remote connection (the 'listener') can write back to the 
-journal effecting a two way conversation. There can be multiple readers and writers to the
+updates from the recorder. The remote connection (the 'listener') can optionally write back to the 
+journal effecting a two way conversation or RPC. There can be multiple readers and writers to the
 journal.
 
-The journal is serialised using Chronicle-Queue to a memory mapped file so
+RxJournal uses Chronicle-Queue (a memory mapped file solution) serialisation meaning that
 the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
 in single digit micro seconds. 
 
 If you need to pass data between JVMs on the same machine this is not only the most efficient way 
-to do so but you will also have a full recording of the data that goes between the JVMs.
+to do so but you will also provide you with a full recording of the data that is transferred between the JVMs.
 
 ### 3. Slow consumers (handling back pressure)
 
@@ -41,11 +41,11 @@ there are a few options available to your system.
 
 Most often you end up implementing strategies that hold buffers of data in memory until the
 consumer catches up. The problem with those sort of strategies are one, if your process
-crashes you lose all the data in your buffer, if you need to consume the fast data in a 
+crashes you lose all the data in your buffer. Therefore if you need to consume the fast data in a 
 transactional manner this will not be an option. Two, you may run out of memory if the 
 buffers get really big. At the very least you will probably need to run your JVM with a large
 memory setting that many be ineffecient. For latency sensitive applications it will 
-put pressure on the GC.
+put pressure on the GC which will not be acceptable.
 
 
 ## Design Goals
@@ -54,7 +54,7 @@ put pressure on the GC.
 program crashes
 - Recording and playback is so fast that it won't slow down the host program.
 - Recording and playback can be achieved without any gc overhead
-- RxRecorder can be eaily fitted into any RxJava project
+- RxRecorder can be eaily added (or even retro-fitted) into any RxJava project
 
 # Quick Start
 ## Creating a Journal
@@ -67,12 +67,14 @@ The directory is the location where the serialised file will be created
 
 ## Recording a reactive stream
 `RxRecorder` allows any RxJava `Observable`/`Flowable` to be journalled to disk using 
-the record function:
+the `record` function:
     
     RxRecorder rxRecorder = rxJournal.createRxRecorder();
     rxRexcorder.record(Observable)
 
-## Playing back a reactive stream 
+For notes on threading see FAQ below.
+
+## Playing back a reactive stream
 
 `RxPlayer` is used to playback the journal recording:
 
@@ -90,8 +92,6 @@ The data can be examined in plain ASCII using the writeToDisk function:
 
     rxJournal.writeToDisk(String fileName, boolean printToSdout)
     
-There are 3 primary envisaged purposes for RxRecorder.
-
 ## Putting it together with HelloWorld
 
 
@@ -133,7 +133,16 @@ Full code example code [HelloWorldApp].
         }
     }
 ```    
+The results of running this program can be seen below:
 
+````
+[main] INFO org.rxjournal.impl.RxJournal - Deleting existing recording [/tmp/Demo]
+Hello World!!
+[main] INFO org.rxjournal.impl.RxJournal - Writing recording to dir [/tmp/Demo/demo.txt]
+[main] INFO org.rxjournal.impl.RxJournal - VALID	1	2017-05-19T08:52:27.156		Hello World!!
+[main] INFO org.rxjournal.impl.RxJournal - COMPLETE	2	2017-05-19T08:52:27.157		EndOfStream{}
+[main] INFO org.rxjournal.impl.RxJournal - Writing to dir complete
+````
 
 ## FAQ
 
