@@ -174,20 +174,75 @@ These are:
 
 See [here](chronicle docs) for full documentation
 
-### Threading
+### Flowable or Observable?
+
+RxJava2 is divided into 2 types of streams `Flowable` which support back pressure
+and `Observable` which do not support back pressure.
+
+In terms of recording, `RxRecorder` supports both `Flowable` and `Observable`.  A subscription
+is made to either and the data recorded is serialised into `RxJournal`.
+
+On the other hand, `RxPlayer` returns an `Observable` because by definition there will be
+no back pressure to worry about. 
+
+The consumer of this Observable can process the events at 
+their own speed backed up the guarantee that every item has been recorded into the journal.
+If you want only the latest event (the events are replaceable) you can play the 
+Observable into a Flowable that gives you the latest item. You will have a full
+record of the complete stream of events whether they were dropped or not. You can even
+record the processed event into the RxJournal again under a different filter. If you want a
+record of the events that were actually processed.
+
+### RxJournal on the critical path or as another subscriber 
  
-Thread 1: HelloWorldApp has an Observable<Bytes> that produces a stream of bytes. 
-RxRecorder subscribes to and records the bytes that are produced. 
+There are 2 ways you might want to set up your RxJournal.
 
-Thread2: HelloWorldApp has a BytesToWords processor which subscribes to RxRecorder 
-creating a stream of words which also recorded by RXRecorder.
+1. Record your Observable/Flowable input into RxJournal and then have your processer subscribe to
+RxJournal for its stream of events. This effectively inserts RxJournal into the critical path of
+your program. This will certainly be the setup if you are using RxJava to handle back pressure.
+This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](link)
 
-See diagram below.
-
-Since the input has been recorded we are able to test the BytesToWordsProcessor directly from RxRecorder without
-the original Observable<Bytes>. Furthermore since the output was recorded we can validate
-the output against the original output of the program.
+2. Have RxJournal as a second subscriber to your Observable input data. This has the benefit
+of keeping all functions on the same thread. This might be the setup if you are using RxJournal
+to record data for testing purposes. You might want to use the ConnectableObservable paradigm
+for cold Observables as you probably don't want RxRecorder kicking off the connection until
+all the other connections have been setup. 
+This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](link)
 
 ## Examples
 
-### HelloWorldApp
+There are few example applications that are worth considering.
+
+### HelloWorldApp_JournalPlayThrough
+
+This demonstrates how to set up a simple 'play through' example.
+ 
+We have an input `Flowable` with a stream of `Byte`s. These are recorded in the journal 
+by `RxRecorder`.
+
+We then subscribe to `RxJournal` with `RxPlayer` giving us an `Observable` of `Bytes`
+which are processed by the `BytesToWordsProcessor`. The output of the processor is 
+also recorded into `RxJournal` so we have a full record of all our input and outputs to
+the program.
+
+Note that we use `recordAsync` rather than `record` because otherwise we would 
+block the main thread until all the event stream ahd completed recording and only
+then would we proceed to process the items. Although in this trivial example
+it's hard to see the effect this has I encourage you to paly with the `INTERVAL_MS`
+setting to see what happens as you increase the delay to something noticeable.
+Then try and change `recordAsync` to `async` and you will see the effect of
+the threading.
+
+We then display the results of the program to stdout as well as writing to a file.
+
+This recording will be valuable when it comes to writing a unit test for 
+`BytesToWordsProcessor` which we'll see in another example.
+
+### HelloWorldApp_JournalAsObserver
+
+This is very similar to the last example except that we processes evrything 
+on the same thread. We can do this because rather than the `BytesToWordsProcessor`
+subscribing to `RxJournal` it subscribes directly to the `Observable<Byte>` input.
+
+This is a less intrusive way to insert RxRecorder into your project but of
+course will not handle the back pressure probelm.
