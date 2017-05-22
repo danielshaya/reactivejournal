@@ -14,11 +14,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- *  A Junit test class to test BytesToWordsProcessor
+ *  A demo example Junit test class to test BytesToWordsProcessor.
  */
 public class HelloWorldTest {
     private static final Logger LOG = LoggerFactory.getLogger(HelloWorldTest.class.getName());
-    private static final Replay REPLAY_STRATEGY = Replay.FAST;
 
     @Test
     public void testHelloWorld() throws IOException, InterruptedException {
@@ -27,7 +26,11 @@ public class HelloWorldTest {
 
         //Get the input from the recorder
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
-        PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER).replayStrategy(REPLAY_STRATEGY);
+        //In this case we can play the data stream in FAST mode.
+        PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
+                .replayStrategy(Replay.FAST);
+        //Use a ConnectableObservable as we only want to kick off the stream when all
+        //connections have been wired together.
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
