@@ -17,7 +17,6 @@ public class FastProducerSlowConsumerWithRxRecorder {
 
     public static void main(String[] args) throws IOException {
         DSUtil.exitAfter(10_000);
-        System.setProperty("chronicle.queueBlockSize", "1");
 
         RxJournal rxJournal = new RxJournal(file);
         rxJournal.clearCache();

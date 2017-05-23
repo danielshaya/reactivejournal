@@ -289,4 +289,18 @@ fast producer and slow consumer.
 
 `FastProducer` produces `MarketData` which is consumer by `SlowConsumerObserver` (in
 the case of Observable) or `SlowConsumerSubscriber` (in the case of Flowable).
+
+#### FastProducerSlowConsumer_SameThreadStrategy
+
+This is the simplest strategy which invloves running the FastProducer and 
+SlowConsumer on the same thread. The obvious problem here is that the FastProducer 
+is limited to producing at the same speed the SlowConsumer can consume.
+ 
+Here the 'back pressure' being applied by the SlowConsumer is pretty
+crass and works by slowing down the producer. In most cases this is not a 
+viable option.
+
+Lets look at some more sophisticated options.
+
+#### 
  
