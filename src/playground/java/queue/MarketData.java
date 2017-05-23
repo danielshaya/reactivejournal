@@ -1,4 +1,4 @@
-package org.rxjournal.examples.fastproducerslowconsumer;
+package queue;
 
 import net.openhft.chronicle.wire.Marshallable;
 

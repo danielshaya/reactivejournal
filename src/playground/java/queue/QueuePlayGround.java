@@ -5,7 +5,6 @@ import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.ValueIn;
-import org.rxjournal.examples.fastproducerslowconsumer.MarketData;
 import org.rxjournal.util.DSUtil;
 
 import java.util.concurrent.Executors;
