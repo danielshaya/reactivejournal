@@ -174,9 +174,10 @@ Chronicle-Queue.
 These are:
 * AutoBoxed primitives
 * Classes implementing [Serialisable]
+* Classes implementing [Externalizable]
 * Classes implementing [Marshallable]
 
-See [here](chronicle docs) for full documentation
+See [Chronicle Queue Docs](https://github.com/OpenHFT/Chronicle-Queue#restrictions-on-topics-and-messages) for full documentation
 
 ### Flowable or Observable?
 
