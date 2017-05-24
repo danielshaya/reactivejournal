@@ -172,7 +172,7 @@ Items that can be serialised to RXJournal are those that can be serialised to
 Chronicle-Queue.
 
 These are:
-* AutoBoxed primitives
+* AutoBoxed primitives, Strings and byte[]
 * Classes implementing [Serialisable]
 * Classes implementing [Externalizable]
 * Classes implementing [Marshallable]
