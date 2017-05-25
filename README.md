@@ -124,7 +124,7 @@ The data can be examined in plain ASCII using the writeToDisk function:
 ## Putting it together with HelloWorld
 
 
-Full code example code [HelloWorldApp]().
+Full code example code [HelloWorldApp](https://github.com/danielshaya/rxjournal/blob/master/src/main/java/org/rxjournal/examples/helloworld/HelloWorld.java).
 
 ```java
     package org.rxjournal.examples.helloworld;

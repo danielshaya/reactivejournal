@@ -21,3 +21,4 @@
 
 16. Write tests for record, play until
 17. Consider replacing log with sout or exceptions
+23. Reduce size of Chronicle files.
