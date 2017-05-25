@@ -5,10 +5,11 @@ functionality to record and replay reactive streams.
 
 ## Acknowlegments
 
-Special thanks to my friend and ex-collegue Peter Lawrey for inspiring me with his Chronicle
-libraries which underpin RxRecorder.
+Special thanks to my friend and ex-collegue [Peter Lawrey](https://stackoverflow.com/users/57695/peter-lawrey)
+for inspiring me with his [Chronicle libraries](https://github.com/OpenHFT) which underpin RxJournal.
 
-To those behind RxJava in particular to Tomasz Nurkiewicz for his talks and book which
+To those behind [RxJava](https://github.com/ReactiveX/RxJava) in particular to 
+[Tomasz Nurkiewicz](http://www.nurkiewicz.com) for his talks and book which
 opened my eyes to RxJava.
  
 ## Downloading the project
@@ -44,7 +45,7 @@ Another powerful use case is to enable users to replay production data into test
 By simply copying over the journal file from a production system and replaying all or part of the file
 into a test system the exact conditions of the primary system will be reproduced.
 
-### 2. Remote Connnections
+### 2. Remote Connections
 
 RxJournal can be recorded on one JVM and can be replayed (in real-time if required) on one or more 
 JVMs provided they have access to the journal file location.  
