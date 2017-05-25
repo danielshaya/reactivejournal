@@ -21,7 +21,8 @@ public class HelloWorldRemote {
         RxJournal rxJournal = new RxJournal(HelloWorldApp_JounalAsObserver.FILE_NAME);
         //Get the input from the remote process
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
-        PlayOptions options = new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER).playFromNow(true);
+        PlayOptions options = new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
+                .playFromNow(true).replayRate(PlayOptions.ReplayRate.FAST);
         ConnectableObservable<Byte> remoteInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();

@@ -17,7 +17,7 @@ public class FastProducerSlowConsumer {
             AtomicLong publishedCount = new AtomicLong(0);
             while (true) {
                 publishedCount.incrementAndGet();
-                if (publishedCount.get() == 2500) {
+                if (publishedCount.get() == stopAfter) {
                     emitter.onComplete();
                     break;
                 }

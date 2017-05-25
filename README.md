@@ -3,18 +3,26 @@
 RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
 functionality to record and replay reactive streams. 
 
+## Acknowlegments
+
+Special thanks to my friend and ex-collegue Peter Lawrey for inspiring me with his Chronicle
+libraries which underpin RxRecorder.
+
+To those behind RxJava in particular to Tomasz Nurkiewicz for his talks and book which
+opened my eyes to RxJava.
+ 
 ## Downloading the project
 
 ### Maven
 RxJournal is a Maven project so you can clone the project and build in the usual way.
 
-The intention is for this project to make its way in Maven Central (work in progress).
+The intention is for this project to make its way into Maven Central (work in progress).
 
 ### Download the jar
 Go to the releases section of the project. With each release there will be an uber jar that you 
-can download with all the RXJournal classes and dependencies.
+can download with the RXJournal classes and all dependencies.
 
-To test that it works try:
+Once downloaded you can test that it works by running:
 
 ````
 java -cp ./rxjournal-x.x.x.jar org.rxjournal.examples.helloworld.HelloWorld 
@@ -67,6 +75,7 @@ buffers get really big. At the very least you will probably need to run your JVM
 memory setting that many be inefficient. For latency sensitive applications it will 
 put pressure on the GC which will not be acceptable.
 
+See more about this topic below in the [Examples]() section
 
 ## Design Goals
 
@@ -115,7 +124,7 @@ The data can be examined in plain ASCII using the writeToDisk function:
 ## Putting it together with HelloWorld
 
 
-Full code example code [HelloWorldApp].
+Full code example code [HelloWorldApp]().
 
 ```java
     package org.rxjournal.examples.helloworld;
@@ -214,13 +223,22 @@ for cold Observables as you probably don't want RxRecorder kicking off the conne
 all the other connections have been setup. 
 This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](link)
 
+### Play the stream in actual time or fast
+
+The RxPlayer can `play` in two modes:
+* `ACTUAL_TIME` This plays back the stream preserving the time gaps between the events. This is
+important for back testing and reproducing exact conditions in unit tests.
+* `FAST` This plays the events as soon as they are recieved. Use this when you are using 
+RxJournal for remote connections or when using RxJounal to deal with back pressure.
+
 ## Examples
 
-There are few example applications in the code that are worth considering.
+There are few example applications in the code that work through the typical
+use cases and are worth considering in more detail.
 
 ### HelloWorldApp_JournalPlayThrough
 
-This demonstrates how to set up a simple 'play through' example.
+This program demonstrates how to set up a simple 'play through' example.
  
 We have an input `Flowable` with a stream of `Byte`s. These are recorded in the journal 
 by `RxRecorder`.
@@ -283,12 +301,34 @@ like this:
  
 
 
-### FastProducer SlowConsumer
+### Fast Producer Slow Consumer
 
 In these example programs we deal with the situation where we find ourselves with a
 fast producer and slow consumer. 
 
-`FastProducer` produces `MarketData` which is consumer by `SlowConsumerObserver` (in
-the case of Observable) or `SlowConsumerSubscriber` (in the case of Flowable).
+In all these example we setup a scenario in [`FastProducerSlowConsumer`]() where the
+producer emits `Long` values every millisecond. We also create a `Consumer` which
+processes the Long values with a variable delay which is significantly slower
+than the rate that they are being produced.
+
+In other words we have the classic Fast Producer Slow Consumer scenario which needs
+to be handled by applying back pressure.
+
+The following example programs have all been written to 'solve' the back pressure 
+problem we have created.
+
+#### RxJavaBackPressure
+
+Firstly let's consider how RxJava handles back pressure out of the box. 
+
+A quick reminder, in RxJava2 the code was split into 2 sections:
+* `Observable` - no back pressure. Use when back pressure is not an issue because the
+code is more efficient not having to deal with this complication.
+* `Flowable` - handles back pressure. Use when you have to address the back pressure issue.
+ 
+Clearly we will only be looking at the `Flowable` part of RxJava2 in this example.
+
+
+
 
  
