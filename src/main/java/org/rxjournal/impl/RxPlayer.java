@@ -5,6 +5,8 @@ import io.reactivex.Observable;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.wire.ValueIn;
+import org.rxjournal.impl.PlayOptions.PauseStrategy;
+import org.rxjournal.impl.PlayOptions.ReplayRate;
 import org.rxjournal.util.DSUtil;
 
 /**
@@ -77,9 +79,11 @@ public class RxPlayer {
     }
 
     private void pause(PlayOptions options, long[] lastTime, long recordedAtTime) {
-        if (options.replayStrategy() == PlayOptions.Replay.REAL_TIME && lastTime[0] != Long.MIN_VALUE) {
+        if (options.replayRate() == ReplayRate.ACTUAL_TIME && lastTime[0] != Long.MIN_VALUE) {
             DSUtil.sleep((int) (recordedAtTime - lastTime[0]));
+        }else if(options.pauseStrategy()== PauseStrategy.YIELD){
+            Thread.yield();
         }
-        //todo add configurable pause strategy
+        //otherwise SPIN
     }
 }

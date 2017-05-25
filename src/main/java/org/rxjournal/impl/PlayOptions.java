@@ -4,10 +4,11 @@ package org.rxjournal.impl;
  * Created by daniel on 26/04/17.
  */
 public class PlayOptions {
-    public enum Replay {REAL_TIME, FAST}
+    public enum ReplayRate {ACTUAL_TIME, FAST}
+    public enum PauseStrategy {SPIN, YIELD}
     private String filter = "";
-    private Replay replayStrategy = Replay.REAL_TIME;
-    private boolean endOfStreamToken = true;
+    private ReplayRate replayRate = ReplayRate.ACTUAL_TIME;
+    private PauseStrategy pauseStrategy = PauseStrategy.YIELD;
     private Object using = null;
     private boolean playFromNow = false;
     private long playFrom = Long.MAX_VALUE;
@@ -23,21 +24,21 @@ public class PlayOptions {
         return this;
     }
 
-    public Replay replayStrategy() {
-        return replayStrategy;
+    public ReplayRate replayRate() {
+        return replayRate;
     }
 
-    public PlayOptions replayStrategy(Replay replayStrategy) {
-        this.replayStrategy = replayStrategy;
+    public PlayOptions replayRate(ReplayRate replayRateStrategy) {
+        this.replayRate = replayRateStrategy;
         return this;
     }
 
-    public boolean endOfStreamToken() {
-        return endOfStreamToken;
+    public PauseStrategy pauseStrategy() {
+        return pauseStrategy;
     }
 
-    public PlayOptions endOfStreamToken(boolean endOfStreamToken) {
-        this.endOfStreamToken = endOfStreamToken;
+    public PlayOptions pauseStrategy(PauseStrategy pauseStrategy) {
+        this.pauseStrategy = pauseStrategy;
         return this;
     }
 

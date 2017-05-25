@@ -22,10 +22,10 @@ public class RxJavaBackPressure {
 
     private static void run(BackpressureStrategy backpressureStrategy) {
         System.out.println("RUNNING WITH [" + backpressureStrategy + "]");
-        Flowable<Long> fastConsumer = FastProducerSlowConsumer.createFastConsumer(backpressureStrategy);
+        Flowable<Long> fastProducer = FastProducerSlowConsumer.createFastProducer(backpressureStrategy, 500);
 
         Consumer<Long> onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(10);
-        fastConsumer.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
+        fastProducer.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
                 e -> System.out.println(backpressureStrategy + " " + e),
                 () -> System.out.println(backpressureStrategy + " complete")
         );

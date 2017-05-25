@@ -12,16 +12,16 @@ import java.util.function.Consumer;
  * Created by daniel on 24/05/17.
  */
 public class FastProducerSlowConsumer {
-    static Flowable<Long> createFastConsumer(BackpressureStrategy backpressureStrategy){
+    static Flowable<Long> createFastProducer(BackpressureStrategy backpressureStrategy, int stopAfter){
         return Flowable.create(emitter -> {
             AtomicLong publishedCount = new AtomicLong(0);
             while (true) {
                 publishedCount.incrementAndGet();
-                if (publishedCount.get() == 500) {
+                if (publishedCount.get() == 2500) {
                     emitter.onComplete();
                     break;
                 }
-                DSUtil.sleep(5);
+                DSUtil.sleep(1);
                 emitter.onNext(publishedCount.get());
             }
         }, backpressureStrategy);

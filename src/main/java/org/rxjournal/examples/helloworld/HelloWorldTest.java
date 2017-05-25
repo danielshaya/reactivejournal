@@ -5,7 +5,6 @@ import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.impl.*;
-import org.rxjournal.impl.PlayOptions.Replay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class HelloWorldTest {
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
         //In this case we can play the data stream in FAST mode.
         PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
-                .replayStrategy(Replay.FAST);
+                .replayRate(PlayOptions.ReplayRate.FAST);
         //Use a ConnectableObservable as we only want to kick off the stream when all
         //connections have been wired together.
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();

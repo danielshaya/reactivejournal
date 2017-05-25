@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
 import org.rxjournal.examples.helloworld.HelloWorldApp_JounalAsObserver;
-import org.rxjournal.impl.PlayOptions.Replay;
+import org.rxjournal.impl.PlayOptions.ReplayRate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RxPlayerTest {
     private static final Logger LOG = LoggerFactory.getLogger(RxPlayerTest.class.getName());
-    private static final Replay REPLAY_STRATEGY = Replay.FAST;
+    private static final ReplayRate REPLAY_RATE_STRATEGY = ReplayRate.FAST;
     private final String tmpDir = System.getProperty("java.io.tmpdir");
 
 
@@ -33,7 +33,7 @@ public class RxPlayerTest {
         RxPlayer rxPlayer = rxJournal.createRxPlayer();
         PlayOptions options= new PlayOptions()
                 .filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
-                .replayStrategy(REPLAY_STRATEGY)
+                .replayRate(REPLAY_RATE_STRATEGY)
                 .completeAtEndOfFile(false);
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
 

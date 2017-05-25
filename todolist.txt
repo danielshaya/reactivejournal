@@ -17,7 +17,7 @@
 ******5. Try more than one publisher e.g. add market data publisher (play ground)
 ******21. Deal with errors and test
 ******22. Add status flag to message and implement error handling
+******13. Work out minimum set of features for release
 
-13. Work out minimum set of features for release
 16. Write tests for record, play until
 17. Consider replacing log with sout or exceptions
