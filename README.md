@@ -329,7 +329,63 @@ code is more efficient not having to deal with this complication.
  
 Clearly we will only be looking at the `Flowable` part of RxJava2 in this example.
 
+This example program demonstrates how the 5 `BackpressureStrategy` modes handle back
+pressure.
+* `BUFFER` this will, as its name implies, hold the items in an in-memory buffer waiting
+for availablility on the consumer to process them. This is good choice for handling spikes
+in event traffic where the consumer will eventually be able to catch up with the 
+producer. The problems using this strategy are:
 
+    * If the program crashes the events in the buffer will be lost. Even if the 
+    program terminates normally careful attention has o be paid to draining the buffer.
+    * If the queue builds up too much the JVM will run out of memory and crash.
+    * It forces the program to run with a large memory setting to hold the buffer
+    which can be a problem for programs where latency is an issue especially coupled
+    with the next point.
+    * The program will not be able to be designed in an allocation-free manner. Every
+    item will have to be created in a 'new' object which will then put pressure on the GC.
 
+* `LATEST` and `DROP` deal with back pressure by making the slow consumer keep up with
+the fast producer. This is done by dropping events from the stream. This is a good choice
+where events on the stream are replaceable and you don't need to process every item. The
+problems with this straegy are:
 
- 
+    * If you want to back test your program against all the values in the stream to see
+      if you might get better results by processing more events.
+    * As with buffer you can't write GC friendly code.
+    
+* `ERROR` and `MISSING` deal with back pressure by putting the program into an error state
+as soon as back pressure is encountered. This is useful when you don't expect any back pressure
+and you want the program to error on encountering back pressure. 
+
+#### RxJournalBackPressureBuffer
+
+In this program we set up `RxJournal` to handle back pressure in the buffer mode 
+but solving all the problems that we saw with the standard RxJava `BUFFER` mode.
+
+The FastProducer can be created with
+the `BackpressureStrategy.MISSING` because we don't expect that the producer will ever be
+slowed down by the consumer, which in this case is `RxRecorder`.
+
+The Consumer, rather than subscribing directly to the FastProducer, subscribes to 
+`RxPlayer`.  Note that `RxPlayer.play` returns an `Obserable` as there is no need for it to
+handle back pressure because bakc pressure has already been applied using `RxJournal` as the 
+buffer.
+
+Lets look at the problems `BackpressureStrategy.MISSING` and see how they are solved.
+    
+* Even if the program crashes everything written to RxJournal is safe. The events will be stored
+    to disk and you can just restart the program and carry on consuming the queue at the point 
+    you crashed.  If there is a OS/Machine level issue it is possible that a few messages might
+    get lost that are waiting to be written to disk.  
+    If that is a problem you should make sure that replication is setup on your system.
+* There is no in-memory buffer so there is no need to run with extra heap memory and the program
+certainly won't run out memory because of `RxJournal`
+* When you call `RxPlayer.play` one of the the options is `using`. This allows you to pass in the
+object that will be used for every event. This means that no new objects will be allocated even
+if you have millions of items in your stream. (Of course if you want to hole a reference to the
+event you will need to clone).
+
+In addition to those benefits you will have the ususal benefits of using 'RxJornal' in that you
+will have a full record of the stream to use in testing and you will be able to use remote
+JVMs.
