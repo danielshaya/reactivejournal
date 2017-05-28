@@ -30,7 +30,7 @@ public class RxJournalBackPressureTestingFasterConsumer {
         ConnectableObservable journalInput = rxJournal.createRxPlayer().play(options).publish();
 
         //Reduce the latency of the consumer to 5ms - try reducing or increasing to study the effects.
-        Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(5);
+        Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(3);
 
         Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
 

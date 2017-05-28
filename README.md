@@ -380,7 +380,7 @@ Lets look at the problems `BackpressureStrategy.MISSING` and see how they are so
     get lost that are waiting to be written to disk.  
     If that is a problem you should make sure that replication is setup on your system.
 * There is no in-memory buffer so there is no need to run with extra heap memory and the program
-certainly won't run out memory because of `RxJournal`
+certainly won't run out memory because of `RxJournal`. 
 * When you call `RxPlayer.play` one of the the options is `using`. This allows you to pass in the
 object that will be used for every event. This means that no new objects will be allocated even
 if you have millions of items in your stream. (Of course if you want to hole a reference to the
@@ -389,3 +389,94 @@ event you will need to clone).
 In addition to those benefits you will have the ususal benefits of using 'RxJornal' in that you
 will have a full record of the stream to use in testing and you will be able to use remote
 JVMs.
+
+#### RxJournalBackPressureLatest
+
+As its name implies this demo program shows you how to handle back pressure using `RxJournal`
+but rather than buffer you just want the latest item on the queue.
+
+All you have to do is set up the program exactly as we did in the previous example 
+`RxJournalBackPressureBuffer` but rather than the slow subscriber subscribing to the Observable
+that comes from `RxPlayer.play` we insert a `Flowable` inbetween. The `Flowable` is created 
+with `BackpressureStrategy.LATEST`.
+
+See code snippet from the example below:
+
+```java
+    //1. Get the stream of events from the RxPlayer
+    ConnectableObservable journalInput = rxJournal.createRxPlayer().play(options).publish();
+
+    //2. Create a Flowable with LATEST back pressure strategy from the RxJournal stream
+    Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
+
+    //3. Record the output of the Flowable into the journal (note the different filter name)
+    recorder.record(flowable, "consumed");
+
+    long startTime = System.currentTimeMillis();
+    
+    //4. The slow consumer subscribes to the Flowable 
+    flowable.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
+            e -> System.out.println("RxRecorder " + " " + e),
+            () -> System.out.println("RxRecorder complete [" + (System.currentTimeMillis()-startTime) + "]")
+    );
+```
+
+You might have noticed that as well as the Slow Consumer subscribing to the Flowable to make
+sure it uses the LATEST strategy we also record the values we actaully consumer into RxJournal.
+
+As with the plain RxJava implementation of LATEST (without RxJournal) the Slow Consumer
+only sees the latest updates from the Fast Producer. However if you use RxRecorder (as in this
+example) you have:
+* A full record of all the events that were emitted by the Fast Producer. 
+* A full record of all the events that were actaully consumed by the Slow Producer.
+
+Both these streams can be played back with `RxPlayer` by specifying the appropriate filter
+in the `PlayOptions` when calling `play`.
+
+This leads to being ablse to try the following...
+
+#### RxJournalBackPressureTestingFasterConsumer
+
+In this example we experiment by replaying the event stream recorded in `RxJournal` and 
+observing the effects of lowering the latency of the SlowConsumer.
+
+We have a recording of the FastProducer created whilst running `RxJournalBackPressureBuffer`.
+The SlowConsumer subscribes to this using a `Flowable` with `BackpressureStrategy.LATEST`
+as in the provious example.
+
+When we run with the SlowConsumer at a latency of 5ms we get this result:
+
+````
+Received [100] items. Published item[100]
+Received [200] items. Published item[391]
+Received [300] items. Published item[791]
+Received [400] items. Published item[1175]
+Received [500] items. Published item[1560]
+Received [600] items. Published item[1946]
+Received [700] items. Published item[2340]
+RxRecorder complete [3909ms]
+````
+
+The Slow Consumer has managed to consume about 700 events.
+ 
+If we reduce the latency of SlowConsumer to 3ms we get this result:
+
+````
+Received [100] items. Published item[100]
+Received [200] items. Published item[265]
+Received [300] items. Published item[491]
+Received [400] items. Published item[719]
+Received [500] items. Published item[958]
+Received [600] items. Published item[1192]
+Received [700] items. Published item[1428]
+Received [800] items. Published item[1664]
+Received [900] items. Published item[2046]
+Received [1000] items. Published item[2288]
+RxRecorder complete [3666ms]
+````
+
+The Slow Consumer has now managed to consume about 1000 events.
+ 
+Whilst this is a trivial example I'll let your imagination extend the scenarios
+to real world situations where this sort of ability to replay data against real
+load will be invaluable.
