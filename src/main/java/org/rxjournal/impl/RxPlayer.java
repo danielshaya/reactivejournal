@@ -20,6 +20,11 @@ public class RxPlayer {
         this.rxJournal = rxJournal;
     }
 
+    /**
+     * See documentation on {@link PlayOptions}
+     * @param options Options controlling how play is executed.
+     * @return The Observable which will have the recorded data stream of events.
+     */
     public Observable play(PlayOptions options) {
         long fromTime = System.currentTimeMillis();
 
@@ -32,14 +37,14 @@ public class RxPlayer {
 
                     boolean foundItem = tailer.readDocument(w -> {
                         ValueIn in = w.getValueIn();
-                        dim.process(in, null);
+                        dim.process(in, options.using());
 
                         if (testPastPlayUntil(options, subscriber, dim.getTime())){
                             stop[0] = true;
                             return;
                         }
 
-                        if (options.playFrom() > dim.getTime()
+                        if (options.playFromTime() > dim.getTime()
                                 && (!options.playFromNow() || fromTime < dim.getTime())) {
                             pause(options, lastTime, dim.getTime());
 
@@ -71,7 +76,7 @@ public class RxPlayer {
     }
 
     private boolean testPastPlayUntil(PlayOptions options, Emitter<? super Object> s, long recordedAtTime) {
-        if(options.playUntil() > recordedAtTime){
+        if(options.playUntilTime() > recordedAtTime){
             s.onComplete();
             return true;
         }

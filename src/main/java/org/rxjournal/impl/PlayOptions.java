@@ -1,7 +1,8 @@
 package org.rxjournal.impl;
 
 /**
- * Created by daniel on 26/04/17.
+ * A container class to encapsulate all the configurations settings that can be passed
+ * into the play() method of {@link RxPlayer}
  */
 public class PlayOptions {
     private String filter = "";
@@ -9,8 +10,8 @@ public class PlayOptions {
     private PauseStrategy pauseStrategy = PauseStrategy.YIELD;
     private Object using = null;
     private boolean playFromNow = false;
-    private long playFrom = Long.MAX_VALUE;
-    private long playUntil = Long.MIN_VALUE;
+    private long playFromTime = Long.MAX_VALUE;
+    private long playUntilTime = Long.MIN_VALUE;
     private boolean waitForMoreItems = true;
 
     String filter() {
@@ -52,9 +53,18 @@ public class PlayOptions {
     }
 
     /**
+     * When polling for events the pause strategy is set by {@link PauseStrategy}.
+     * This will default to PauseStrategy.YIELD which calls Thread.yield()
+     * between each unsuccessful attempt to call for the next event. This is
+     * suitable for most applications.<p>
+     * In low latency senitive applications however you might want to set the
+     * {@link PauseStrategy} to PauseStrategy.SPIN which will poll continuously
+     * taking up a full CPU. This will reduce latency to get an event into the
+     * data stream but you need to make sure you have the available compute
+     * power.
      *
-     * @param pauseStrategy
-     * @return
+     * @param pauseStrategy The PauseStrategy to be applied
+     * @return PlayOptions for use in the Builder pattern
      */
     public PlayOptions pauseStrategy(PauseStrategy pauseStrategy) {
         this.pauseStrategy = pauseStrategy;
@@ -65,6 +75,19 @@ public class PlayOptions {
         return using;
     }
 
+    /**
+     * Where keeping GC to a minimum is a requirement the program should not
+     * create a new object for every data event. Instead we can just repopulate
+     * the same object each time.  There is an assumption that the getters/setters
+     * are all available. With this method you are able to pass in a protoype object
+     * which will be repopulated with the data for each event.
+     * <p>
+     * It is important to remember that if you want to keep a reference to the object
+     * that comes off the stream you will need to clone the object.
+     *
+     * @param using The prototype object to be used to populate data from the stream
+     * @return PlayOptions for use in the Builder pattern
+     */
     public PlayOptions using(Object using) {
         this.using = using;
         return this;
@@ -75,37 +98,59 @@ public class PlayOptions {
     }
 
     /**
+     * This setting is used when you only want to listen to events put on the stream
+     * from now and you are not interested in replaying from the start of the recording.
+     * This might be true, for example, if you have a remote connection to a hot event
+     * source.
      *
-     * @param playFromNow
-     * @return
+     * @param playFromNow Defaulted to false
+     * @return PlayOptions for use in the Builder pattern
      */
     public PlayOptions playFromNow(boolean playFromNow) {
         this.playFromNow = playFromNow;
         return this;
     }
 
-    public long playFrom() {
-        return playFrom;
+    long playFromTime() {
+        return playFromTime;
     }
 
-    public PlayOptions playFrom(long playFrom) {
-        this.playFrom = playFrom;
+    /**
+     * Play back the recording from this time,  Useful if you only want to play a subset of the recording.
+     * @param playFromTime time in millis from 1970
+     * @return PlayOptions for use in the Builder pattern
+     */
+    public PlayOptions playFromTime(long playFromTime) {
+        this.playFromTime = playFromTime;
         return this;
     }
 
-    public long playUntil() {
-        return playUntil;
+    long playUntilTime() {
+        return playUntilTime;
     }
 
-    public PlayOptions playUntil(long playUntil) {
-        this.playUntil = playUntil;
+    /**
+     * Play back until this time. Useful if you only want to play a subset of the recording.
+     * @param playUntilTime time in millis from 1970
+     * @return PlayOptions for use in the Builder pattern
+     */
+    public PlayOptions playUntilTime(long playUntilTime) {
+        this.playUntilTime = playUntilTime;
         return this;
     }
 
-    public boolean completeAtEndOfFile() {
+
+    boolean completeAtEndOfFile() {
         return waitForMoreItems;
     }
 
+    /**
+     * Used when you want to stop as soon as there are no more items. For example
+     * in a unit test. This is only useful where there was no completion item.
+     *
+     * @param waitForMoreItems Defaulted to true
+     * @return PlayOptions for use in the Builder pattern
+     */
     public PlayOptions completeAtEndOfFile(boolean waitForMoreItems) {
         this.waitForMoreItems = waitForMoreItems;
         return this;

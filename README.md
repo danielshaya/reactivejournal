@@ -232,6 +232,15 @@ important for back testing and reproducing exact conditions in unit tests.
 * `FAST` This plays the events as soon as they are recieved. Use this when you are using 
 RxJournal for remote connections or when using RxJounal to deal with back pressure.
 
+### Can RxJournal be used in a low latency environment
+
+The intention is for `RxJournal` to support low latency programs. The two main features to allow
+for this are:
+* Dedicating a CPU core to RxPlayer by using the FAST setting described above so that we don't have 
+any context switching.
+* Setting the PlayOptions.using() so that there is no allocation for new events. This should enable
+programs to be written that have minimal GC impact, critical for reliable low latency.
+
 ## Examples
 
 There are few example applications in the code that work through the typical
