@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  *  A demo example Junit test class to test BytesToWordsProcessor.
+ *  Make sure you have run the HelloWorldApp_JounalAsObserver first to generate the journal.
  */
 public class HelloWorldTest {
     private static final Logger LOG = LoggerFactory.getLogger(HelloWorldTest.class.getName());

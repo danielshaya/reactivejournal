@@ -10,8 +10,8 @@ public class PlayOptions {
     private PauseStrategy pauseStrategy = PauseStrategy.YIELD;
     private Object using = null;
     private boolean playFromNow = false;
-    private long playFromTime = Long.MAX_VALUE;
-    private long playUntilTime = Long.MIN_VALUE;
+    private long playFromTime = Long.MIN_VALUE;
+    private long playUntilTime = Long.MAX_VALUE;
     private boolean waitForMoreItems = true;
 
     String filter() {
@@ -154,6 +154,17 @@ public class PlayOptions {
     public PlayOptions completeAtEndOfFile(boolean waitForMoreItems) {
         this.waitForMoreItems = waitForMoreItems;
         return this;
+    }
+
+    void validate() throws IllegalArgumentException {
+        if(playFromTime !=  Long.MIN_VALUE && playFromNow){
+            throw new IllegalArgumentException("Illegal combination: PlayFromTime and PlayFromNow" +
+                    "not allowed to be set at the same time");
+        }
+
+        if(playFromNow){
+            playFromTime = System.currentTimeMillis();
+        }
     }
 
     public enum ReplayRate {ACTUAL_TIME, FAST}

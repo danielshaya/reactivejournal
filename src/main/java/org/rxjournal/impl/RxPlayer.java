@@ -1,6 +1,5 @@
 package org.rxjournal.impl;
 
-import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptTailer;
@@ -26,7 +25,7 @@ public class RxPlayer {
      * @return The Observable which will have the recorded data stream of events.
      */
     public Observable play(PlayOptions options) {
-        long fromTime = System.currentTimeMillis();
+        options.validate();
 
         return Observable.create(subscriber -> {
             try (ChronicleQueue queue = rxJournal.createQueue()) {
@@ -39,13 +38,13 @@ public class RxPlayer {
                         ValueIn in = w.getValueIn();
                         dim.process(in, options.using());
 
-                        if (testPastPlayUntil(options, subscriber, dim.getTime())){
+                        if (dim.getTime() > options.playUntilTime()){
+                            subscriber.onComplete();
                             stop[0] = true;
                             return;
                         }
 
-                        if (options.playFromTime() > dim.getTime()
-                                && (!options.playFromNow() || fromTime < dim.getTime())) {
+                        if( dim.getTime() > options.playFromTime()) {
                             pause(options, lastTime, dim.getTime());
 
                             if (options.filter().equals(dim.getFilter())) {
@@ -65,22 +64,17 @@ public class RxPlayer {
                             lastTime[0] = dim.getTime();
                         }
                     });
-                    if (!foundItem && !options.completeAtEndOfFile() || stop[0]) {
+                    if (!foundItem && !options.completeAtEndOfFile()) {
                         subscriber.onComplete();
+                        return;
+                    }
+                    if(stop[0]){
                         return;
                     }
                 }
             }
 
         });
-    }
-
-    private boolean testPastPlayUntil(PlayOptions options, Emitter<? super Object> s, long recordedAtTime) {
-        if(options.playUntilTime() > recordedAtTime){
-            s.onComplete();
-            return true;
-        }
-        return false;
     }
 
     private void pause(PlayOptions options, long[] lastTime, long recordedAtTime) {

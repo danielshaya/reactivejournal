@@ -87,7 +87,7 @@ public class RxErrorTest {
                 e->{
                     onErrorValid.incrementAndGet();
                 },
-                ()->onComplete.incrementAndGet());
+                ()->onCompleteValid.incrementAndGet());
 
         Assert.assertEquals(2, onNextValid.get());
         Assert.assertEquals(0, onErrorValid.get());
