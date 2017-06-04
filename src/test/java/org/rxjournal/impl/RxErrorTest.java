@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -41,7 +42,7 @@ public class RxErrorTest {
         );
 
         RxJournal rxJournal = new RxJournal("/tmp/testError");
-        rxJournal.writeToFile("/tmp/testError/error.txt",true);
+        rxJournal.writeToFile("/tmp/testError/error.txt",true, ZoneId.systemDefault());
         rxJournal.clearCache();
 
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.

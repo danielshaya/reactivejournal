@@ -52,15 +52,24 @@ public class RxJournal {
     }
 
     public void writeToFile(String fileOutput){
-        writeToFile(fileOutput, false);
+        writeToFile(fileOutput, false, null);
+    }
+    public void writeToFile(String fileOutput, boolean toStdout){
+        writeToFile(fileOutput, toStdout, null);
     }
 
-    public void writeToFile(String fileOutput, boolean toStdout){
+    /**
+     * Writes the journal in a human readable form to a file. Optionally also writes it to stdout.
+     * @param fileOutput The name of the file
+     * @param toStdout Whether it should be written to stdout
+     * @param zoneId TimeZone to display to format the time. If null uses millis since 1970.
+     */
+    public void writeToFile(String fileOutput, boolean toStdout, ZoneId zoneId) {
         LOG.info("Writing recording to dir [" + fileOutput + "]");
         try (ChronicleQueue queue = createQueue()) {
             ExcerptTailer tailer = queue.createTailer();
             try {
-                writeQueueToFile(tailer, fileOutput, toStdout);
+                writeQueueToFile(tailer, fileOutput, toStdout, zoneId);
             } catch (IOException e) {
                 LOG.error("Error writing to file", e);
             }
@@ -80,11 +89,8 @@ public class RxJournal {
         return queue;
     }
 
-    private static void writeQueueToFile(ExcerptTailer tailer, String fileName) throws IOException {
-        writeQueueToFile(tailer, fileName, false);
-    }
-
-    private static void writeQueueToFile(ExcerptTailer tailer, String fileName, boolean toStdout) throws IOException {
+    private static void writeQueueToFile(ExcerptTailer tailer, String fileName, boolean toStdout, ZoneId zoneId)
+            throws IOException {
         FileWriter fileWriter = new FileWriter(fileName);
         tailer.toStart();
         DataItemProcessor dim = new DataItemProcessor();
@@ -92,10 +98,15 @@ public class RxJournal {
                 w -> {
                     ValueIn in = w.getValueIn();
                     dim.process(in,null);
-                    //todo timezone should be configurable
-                    LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(dim.getTime()), ZoneId.of("Europe/London"));
+                    String time = null;
+                    if(zoneId != null) {
+                        LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(dim.getTime()), zoneId);
+                        time = dateTime.toString();
+                    }else{
+                        time = String.valueOf(dim.getTime());
+                    }
                     try {
-                        String item = RxStatus.toString(dim.getStatus()) + "\t" + dim.getMessageCount() + "\t" + dateTime + "\t"
+                        String item = RxStatus.toString(dim.getStatus()) + "\t" + dim.getMessageCount() + "\t" + time + "\t"
                                 + dim.getFilter() + "\t" + dim.getObject();
                         fileWriter.write(item  + "\n");
                         if(toStdout) {
