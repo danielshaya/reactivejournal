@@ -3,15 +3,6 @@
 RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
 functionality to record and replay reactive streams. 
 
-## Acknowlegments
-
-Special thanks to my friend and ex-collegue [Peter Lawrey](https://stackoverflow.com/users/57695/peter-lawrey)
-for inspiring me with his [Chronicle libraries](https://github.com/OpenHFT) which underpin RxJournal.
-
-To those behind [RxJava](https://github.com/ReactiveX/RxJava) in particular to 
-[Tomasz Nurkiewicz](http://www.nurkiewicz.com) for his talks and book which
-opened my eyes to RxJava.
- 
 ## Downloading the project
 
 ### Maven
@@ -489,3 +480,13 @@ The Slow Consumer has now managed to consume about 1000 events.
 Whilst this is a trivial example I'll let your imagination extend the scenarios
 to real world situations where this sort of ability to replay data against real
 load will be invaluable.
+
+## Acknowlegments
+
+Special thanks to my friend and ex-collegue [Peter Lawrey](https://stackoverflow.com/users/57695/peter-lawrey)
+for inspiring me with his [Chronicle libraries](https://github.com/OpenHFT) which underpin RxJournal.
+
+To those behind [RxJava](https://github.com/ReactiveX/RxJava) in particular to 
+[Tomasz Nurkiewicz](http://www.nurkiewicz.com) for his talks and book which
+opened my eyes to RxJava.
+ 
