@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 public class RxRecorder {
     private static final Logger LOG = LoggerFactory.getLogger(RxRecorder.class.getName());
-    private static final AtomicLong messageCounter = new AtomicLong(0);
+
     private RxJournal rxJournal;
 
     public RxRecorder(RxJournal rxJournal) {
@@ -78,7 +78,7 @@ public class RxRecorder {
 
     private void writeObject(WireOut wireOut, String filter, Object obj, byte status){
         wireOut.getValueOut().int8(status);
-        wireOut.getValueOut().int64(messageCounter.incrementAndGet());
+        wireOut.getValueOut().int64(rxJournal.getMessageCounter().incrementAndGet());
         wireOut.getValueOut().int64(System.currentTimeMillis());
         wireOut.getValueOut().text(filter);
         if(status==RxStatus.ERROR){

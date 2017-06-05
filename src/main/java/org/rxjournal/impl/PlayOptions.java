@@ -12,6 +12,8 @@ public class PlayOptions {
     private boolean playFromNow = false;
     private long playFromTime = Long.MIN_VALUE;
     private long playUntilTime = Long.MAX_VALUE;
+    private long playFromSeqNo = Long.MIN_VALUE;
+    private long playUntilSeqNo = Long.MAX_VALUE;
     private boolean waitForMoreItems = true;
 
     String filter() {
@@ -140,6 +142,34 @@ public class PlayOptions {
     }
 
 
+    long playFromSeqNo() {
+        return playFromSeqNo;
+    }
+
+    /**
+     * Play back the recording from this seqNo,  Useful if you only want to play a subset of the recording.
+     * @param playFromSeqNo sequence number to start from
+     * @return PlayOptions for use in the Builder pattern
+     */
+    public PlayOptions playFromSeqNo(long playFromSeqNo) {
+        this.playFromSeqNo = playFromSeqNo;
+        return this;
+    }
+
+    long playUntilSeqNo() {
+        return playUntilSeqNo;
+    }
+
+    /**
+     * Play back until this sequence number. Useful if you only want to play a subset of the recording.
+     * @param playUntilSeqNo play until this sequence number
+     * @return PlayOptions for use in the Builder pattern
+     */
+    public PlayOptions playUntilSeqNo(long playUntilSeqNo) {
+        this.playUntilSeqNo = playUntilSeqNo;
+        return this;
+    }
+
     boolean completeAtEndOfFile() {
         return waitForMoreItems;
     }
@@ -159,6 +189,21 @@ public class PlayOptions {
     void validate() throws IllegalArgumentException {
         if(playFromTime !=  Long.MIN_VALUE && playFromNow){
             throw new IllegalArgumentException("Illegal combination: PlayFromTime and PlayFromNow" +
+                    "not allowed to be set at the same time");
+        }
+
+        if(playFromTime !=  Long.MIN_VALUE && playFromSeqNo != Long.MIN_VALUE){
+            throw new IllegalArgumentException("Illegal combination: PlayFromTime and PlayFromSeqNo" +
+                    "not allowed to be set at the same time");
+        }
+
+        if(playFromSeqNo !=  Long.MIN_VALUE && playFromNow){
+            throw new IllegalArgumentException("Illegal combination: PlayFromSeqNo and PlayFromNow" +
+                    "not allowed to be set at the same time");
+        }
+
+        if(playUntilTime !=  Long.MAX_VALUE && playUntilSeqNo != Long.MAX_VALUE){
+            throw new IllegalArgumentException("Illegal combination: PlayUntiTime and PlayUntilSeqNo" +
                     "not allowed to be set at the same time");
         }
 

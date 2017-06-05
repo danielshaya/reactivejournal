@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * RxJournal
@@ -23,6 +24,7 @@ import java.time.ZoneId;
 public class RxJournal {
     private static final Logger LOG = LoggerFactory.getLogger(RxJournal.class.getName());
     private String dir;
+    private final AtomicLong messageCounter = new AtomicLong(0);
 
     public RxJournal(String dir){
         this.dir = dir;
@@ -87,6 +89,10 @@ public class RxJournal {
             queue = SingleChronicleQueueBuilder.binary(dir).blockSize(blockSize).build();
         }
         return queue;
+    }
+
+    AtomicLong getMessageCounter() {
+        return messageCounter;
     }
 
     private static void writeQueueToFile(ExcerptTailer tailer, String fileName, boolean toStdout, ZoneId zoneId)

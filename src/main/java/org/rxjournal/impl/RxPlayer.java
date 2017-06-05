@@ -38,13 +38,14 @@ public class RxPlayer {
                         ValueIn in = w.getValueIn();
                         dim.process(in, options.using());
 
-                        if (dim.getTime() > options.playUntilTime()){
+                        if (dim.getTime() > options.playUntilTime()
+                                || dim.getMessageCount() >= options.playUntilSeqNo()){
                             subscriber.onComplete();
                             stop[0] = true;
                             return;
                         }
 
-                        if( dim.getTime() > options.playFromTime()) {
+                        if( dim.getTime() > options.playFromTime() && dim.getMessageCount() >= options.playFromSeqNo()) {
                             pause(options, lastTime, dim.getTime());
 
                             if (options.filter().equals(dim.getFilter())) {
