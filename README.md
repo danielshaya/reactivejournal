@@ -1,7 +1,7 @@
 # RxJournal
 
-##Note README needs to be updated for latest version of code which will be done shortly.
-###RxJounal now supports all Reactive implementations not just RxJava
+## Note README needs to be updated for latest version of code which will be done shortly.
+### RxJounal now supports all Reactive implementations not just RxJava
 
 RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
 functionality to record and replay reactive streams. 
