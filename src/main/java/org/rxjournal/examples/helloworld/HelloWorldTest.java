@@ -1,10 +1,17 @@
 package org.rxjournal.examples.helloworld;
 
-import io.reactivex.Observable;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
-import org.rxjournal.impl.*;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import org.rxjournal.impl.PlayOptions;
+import org.rxjournal.impl.RxJournal;
+import org.rxjournal.impl.RxValidator;
+import org.rxjournal.impl.ValidationResult;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +32,7 @@ public class HelloWorldTest {
         RxJournal rxJournal = new RxJournal(HelloWorldApp_JounalAsObserver.FILE_NAME);
 
         //Get the input from the recorder
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         //In this case we can play the data stream in FAST mode.
         PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
                 .replayRate(PlayOptions.ReplayRate.FAST);
@@ -34,22 +41,35 @@ public class HelloWorldTest {
         ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
-        Observable<String> observableOutput = bytesToWords.process(observableInput);
-
-        //Send the output stream to the recorder to be validated against the recorded output
-        RxValidator rxValidator = rxJournal.createRxValidator();
-        Observable<ValidationResult> results = rxValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME,
-                observableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER);
+        Flowable<String> flowableOutput = bytesToWords.process(observableInput.toFlowable(BackpressureStrategy.BUFFER));
 
         CountDownLatch latch = new CountDownLatch(1);
-        results.subscribe(
-                s->LOG.info(s.toString()),
-                e-> LOG.error("Problem in process test [{}]", e),
-                ()->{
-                    LOG.info("Summary[" + rxValidator.getValidationResult().summaryResult()
-                            + "] items compared[" + rxValidator.getValidationResult().summaryItemsCompared()
-                            + "] items valid[" + rxValidator.getValidationResult().summaryItemsValid() +"]");
-                    latch.countDown();
+        //Send the output stream to the recorder to be validated against the recorded output
+        RxValidator rxValidator = rxJournal.createRxValidator();
+        rxValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME,
+                flowableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER, new Subscriber() {
+                    @Override
+                    public void onSubscribe(Subscription subscription) {
+
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        LOG.info(o.toString());
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        LOG.error("Problem in process test [{}]", throwable);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        LOG.info("Summary[" + rxValidator.getValidationResult().summaryResult()
+                                + "] items compared[" + rxValidator.getValidationResult().summaryItemsCompared()
+                                + "] items valid[" + rxValidator.getValidationResult().summaryItemsValid() +"]");
+                        latch.countDown();
+                    }
                 });
 
         observableInput.connect();

@@ -1,12 +1,13 @@
 package org.rxjournal.impl;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.observables.ConnectableObservable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
 import org.rxjournal.examples.helloworld.HelloWorldApp_JournalPlayThrough;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,15 +44,15 @@ public class RxRecorderTest {
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
 
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("input").playFromNow(true);
         ConnectableObservable recordedObservable = rxPlayer.play(options).publish();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.
-        Observable<String> observableOutput = bytesToWords.process(recordedObservable);
+        Flowable<String> flowableOutput = bytesToWords.process(recordedObservable.toFlowable(BackpressureStrategy.BUFFER));
 
         //Pass the output stream (of words) into the rxRecorder which will subscribe to it and record all events.
-        rxRecorder.record(observableOutput, "output");
+        rxRecorder.record(flowableOutput, "output");
 
         //Only start the recording now because we want to make sure that the BytesToWordsProcessor and the rxRecorder
         //are both setup up to receive subscriptions.

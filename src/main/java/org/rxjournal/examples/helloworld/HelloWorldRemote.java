@@ -1,10 +1,11 @@
 package org.rxjournal.examples.helloworld;
 
-import io.reactivex.Observable;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.observables.ConnectableObservable;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
-import org.rxjournal.impl.RxPlayer;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,16 +21,16 @@ public class HelloWorldRemote {
         //Create the rxRecorder but don't delete the cache that has been created.
         RxJournal rxJournal = new RxJournal(HelloWorldApp_JounalAsObserver.FILE_NAME);
         //Get the input from the remote process
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
                 .playFromNow(true).replayRate(PlayOptions.ReplayRate.FAST);
         ConnectableObservable<Byte> remoteInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
-        Observable<String> observableOutput = bytesToWords.process(remoteInput);
+        Flowable<String> flowableOutput = bytesToWords.process(remoteInput.toFlowable(BackpressureStrategy.BUFFER));
 
 
-        observableOutput.subscribe(
+        flowableOutput.subscribe(
                 s->LOG.info("Remote input [{}]", s),
                 e-> LOG.error("Problem in remote [{}]", e),
                 ()->{

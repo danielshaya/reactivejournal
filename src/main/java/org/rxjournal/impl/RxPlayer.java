@@ -1,9 +1,9 @@
 package org.rxjournal.impl;
 
-import io.reactivex.Observable;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.wire.ValueIn;
+import org.reactivestreams.Subscriber;
 import org.rxjournal.impl.PlayOptions.PauseStrategy;
 import org.rxjournal.impl.PlayOptions.ReplayRate;
 import org.rxjournal.util.DSUtil;
@@ -21,67 +21,64 @@ public class RxPlayer {
 
     /**
      * See documentation on {@link PlayOptions}
+     * @param subscriber The subscriber to be called back when events are fired
      * @param options Options controlling how play is executed.
-     * @return The Observable which will have the recorded data stream of events.
      */
-    public Observable play(PlayOptions options) {
+    public void play(Subscriber subscriber, PlayOptions options) {
         options.validate();
 
-        return Observable.create(subscriber -> {
-            try (ChronicleQueue queue = rxJournal.createQueue()) {
-                ExcerptTailer tailer = queue.createTailer();
-                long[] lastTime = new long[]{Long.MIN_VALUE};
-                boolean[] stop = new boolean[]{false};
-                while (true) {
+        try (ChronicleQueue queue = rxJournal.createQueue()) {
+            ExcerptTailer tailer = queue.createTailer();
+            long[] lastTime = new long[]{Long.MIN_VALUE};
+            boolean[] stop = new boolean[]{false};
+            while (true) {
 
-                    boolean foundItem = tailer.readDocument(w -> {
-                        ValueIn in = w.getValueIn();
-                        dim.process(in, options.using());
+                boolean foundItem = tailer.readDocument(w -> {
+                    ValueIn in = w.getValueIn();
+                    dim.process(in, options.using());
 
-                        if (dim.getTime() > options.playUntilTime()
-                                || dim.getMessageCount() >= options.playUntilSeqNo()){
-                            subscriber.onComplete();
-                            stop[0] = true;
-                            return;
-                        }
-
-                        if( dim.getTime() > options.playFromTime() && dim.getMessageCount() >= options.playFromSeqNo()) {
-                            pause(options, lastTime, dim.getTime());
-
-                            if (options.filter().equals(dim.getFilter())) {
-                                if (dim.getStatus()==RxStatus.COMPLETE) {
-                                    subscriber.onComplete();
-                                    stop[0] = true;
-                                    return;
-                                }
-
-                                if (dim.getStatus()==RxStatus.ERROR){
-                                    subscriber.onError((Throwable)dim.getObject());
-                                    stop[0] = true;
-                                    return;
-                                }
-                                subscriber.onNext(dim.getObject());
-                            }
-                            lastTime[0] = dim.getTime();
-                        }
-                    });
-                    if (!foundItem && !options.completeAtEndOfFile()) {
+                    if (dim.getTime() > options.playUntilTime()
+                            || dim.getMessageCount() >= options.playUntilSeqNo()) {
                         subscriber.onComplete();
+                        stop[0] = true;
                         return;
                     }
-                    if(stop[0]){
-                        return;
+
+                    if (dim.getTime() > options.playFromTime() && dim.getMessageCount() >= options.playFromSeqNo()) {
+                        pause(options, lastTime, dim.getTime());
+
+                        if (options.filter().equals(dim.getFilter())) {
+                            if (dim.getStatus() == RxStatus.COMPLETE) {
+                                subscriber.onComplete();
+                                stop[0] = true;
+                                return;
+                            }
+
+                            if (dim.getStatus() == RxStatus.ERROR) {
+                                subscriber.onError((Throwable) dim.getObject());
+                                stop[0] = true;
+                                return;
+                            }
+                            subscriber.onNext(dim.getObject());
+                        }
+                        lastTime[0] = dim.getTime();
                     }
+                });
+                if (!foundItem && !options.completeAtEndOfFile()) {
+                    subscriber.onComplete();
+                    return;
+                }
+                if (stop[0]) {
+                    return;
                 }
             }
-
-        });
+        }
     }
 
     private void pause(PlayOptions options, long[] lastTime, long recordedAtTime) {
         if (options.replayRate() == ReplayRate.ACTUAL_TIME && lastTime[0] != Long.MIN_VALUE) {
             DSUtil.sleep((int) (recordedAtTime - lastTime[0]));
-        }else if(options.pauseStrategy()== PauseStrategy.YIELD){
+        } else if (options.pauseStrategy() == PauseStrategy.YIELD) {
             Thread.yield();
         }
         //otherwise SPIN

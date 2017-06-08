@@ -1,5 +1,8 @@
 # RxJournal
 
+##Note README needs to be updated for latest version of code which will be done shortly.
+###RxJounal now supports all Reactive implementations not just RxJava
+
 RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
 functionality to record and replay reactive streams. 
 
@@ -28,7 +31,7 @@ Testing is a primary motivation for RxJournal. RxJournal allows developers to
 black box test their code by recording all inputs and outputs in and out of their programs.
 
 An obvious use case are unit tests where RxJournal recordings can be used to create
-comprehensive tests (see [HelloWorldTest] for an example). This example makes use of
+comprehensive tests (see [HelloWorldTest](todo) for an example). This example makes use of
 `RxValidator` which allows unit tests to compare their results against previously
 recorded results in the journal.
 
@@ -38,7 +41,7 @@ into a test system the exact conditions of the primary system will be reproduced
 
 ### 2. Remote Connections
 
-RxJournal can be recorded on one JVM and can be replayed (in real-time if required) on one or more 
+`RxJournal` can be recorded on one JVM and can be replayed (in real-time if required) on one or more 
 JVMs provided they have access to the journal file location.  
 
 The remote connection can either read from the beginning of the recording or just start with live 
@@ -46,7 +49,7 @@ updates from the recorder. The remote connection (the 'listener') can optionally
 journal effecting a two way conversation or RPC. There can be multiple readers and writers to the
 journal.
 
-RxJournal uses Chronicle-Queue (a memory mapped file solution) serialisation meaning that
+`RxJournal` uses [Chronicle-Queue](todo) (a memory mapped file solution) serialisation meaning that
 the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
 in single digit micro seconds. 
 
@@ -60,14 +63,14 @@ If you have a fast producer that you can't slow down but your consumer can't kee
 there are a few options available to your system.
 
 Most often you end up implementing strategies that hold buffers of data in memory allowing the
-consumer to catch up. The problem with those sort of strategies are one, if your process
+consumer to catch up eventually. The problem with those sort of strategies are one, if your process
 crashes you lose all the data in your buffer. Therefore if you need to consume the fast data in a 
 transactional manner this will not be an option. Two, you may run out of memory if the 
 buffers get really big. At the very least you will probably need to run your JVM with a large
 memory setting that many be inefficient. For latency sensitive applications it will 
 put pressure on the GC which will not be acceptable.
 
-See more about this topic below in the [Examples]() section
+See more about this topic below in the [Examples](todo) section
 
 ## Design Goals
 
@@ -174,9 +177,9 @@ Chronicle-Queue.
 
 These are:
 * AutoBoxed primitives, Strings and byte[]
-* Classes implementing [Serialisable]
-* Classes implementing [Externalizable]
-* Classes implementing [Marshallable]
+* Classes implementing `Serialisable`
+* Classes implementing `Externalizable`
+* Classes implementing `Marshallable`
 
 See [Chronicle Queue Docs](https://github.com/OpenHFT/Chronicle-Queue#restrictions-on-topics-and-messages) for full documentation
 
@@ -201,23 +204,23 @@ record of the events that were actually processed.
 
 ### RxJournal on the critical path or as another subscriber 
  
-There are 2 ways you might want to set up your RxJournal.
+There are 2 ways you might want to set up your `RxJournal`.
 
-1. Record your Observable/Flowable input into RxJournal and then have your processor subscribe to
-RxJournal for its stream of events. This effectively inserts RxJournal into the critical path of
+1. Record your `Observable`/`Flowable` input into `RxJournal` and then have your processor subscribe to
+`RxJournal` for its stream of events. This effectively inserts `RxJournal` into the critical path of
 your program. This will certainly be the setup if you are using RxJava to handle back pressure.
-This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](link)
+This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](todo)
 
-2. Have RxJournal as a second subscriber to your Observable input data. This has the benefit
-of keeping all functions on the same thread. This might be the setup if you are using RxJournal
-to record data for testing purposes. You might want to use the ConnectableObservable paradigm
+2. Have `RxJournal` as a second subscriber to your `Observable` input data. This has the benefit
+of keeping all functions on the same thread. This might be the setup if you are using `RxJournal`
+to record data for testing purposes. You might want to use the `ConnectableObservable` paradigm
 for cold Observables as you probably don't want RxRecorder kicking off the connection until
 all the other connections have been setup. 
-This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](link)
+This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](todo)
 
 ### Play the stream in actual time or fast
 
-The RxPlayer can `play` in two modes:
+The `RxPlayer` can `play` in two modes:
 * `ACTUAL_TIME` This plays back the stream preserving the time gaps between the events. This is
 important for back testing and reproducing exact conditions in unit tests.
 * `FAST` This plays the events as soon as they are recieved. Use this when you are using 
@@ -234,7 +237,7 @@ programs to be written that have minimal GC impact, critical for reliable low la
 
 ## Examples
 
-There are few example applications in the code that work through the typical
+There are few core example applications in the code that work through the typical
 use cases and are worth considering in more detail.
 
 ### HelloWorldApp_JournalPlayThrough

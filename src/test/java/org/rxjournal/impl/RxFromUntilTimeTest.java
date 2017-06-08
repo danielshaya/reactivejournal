@@ -5,6 +5,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import org.junit.Assert;
 import org.junit.Test;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.rxjournal.util.DSUtil;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class RxFromUntilTimeTest {
         RxRecorder rxRecorder = rxJournal.createRxRecorder();
         rxRecorder.recordAsync(errorFlowable, "fromuntil");
 
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("fromuntil");
         Observable recordedObservable = rxPlayer.play(options);
 
@@ -61,7 +62,7 @@ public class RxFromUntilTimeTest {
         Assert.assertEquals(1, onComplete.get());
 
 
-        rxPlayer = rxJournal.createRxPlayer();
+        rxPlayer = new RxJavaPlayer(rxJournal);
         options = new PlayOptions().filter("fromuntil")
                 .replayRate(PlayOptions.ReplayRate.FAST)
                 .playFromTime(time[0] + 200)

@@ -5,6 +5,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ public class RxJournalBackPressureBuffer {
 
         rxJournal.createRxRecorder().recordAsync(fastProducer,"input");
         PlayOptions options = new PlayOptions().filter("input").replayRate(PlayOptions.ReplayRate.FAST);
-        Observable journalInput = rxJournal.createRxPlayer().play(options);
+        Observable journalInput = new RxJavaPlayer(rxJournal).play(options);
 
         Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(10);
 

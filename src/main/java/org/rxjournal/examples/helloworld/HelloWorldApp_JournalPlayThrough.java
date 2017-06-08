@@ -1,12 +1,12 @@
 package org.rxjournal.examples.helloworld;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import io.reactivex.observables.ConnectableObservable;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
-import org.rxjournal.impl.RxPlayer;
 import org.rxjournal.impl.RxRecorder;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.rxjournal.util.DSUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,16 +44,16 @@ public class HelloWorldApp_JournalPlayThrough {
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
 
         //Retrieve a stream of
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter(INPUT_FILTER).playFromNow(true);
         ConnectableObservable recordedObservable = rxPlayer.play(options).publish();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.
-        Observable<String> observableOutput = bytesToWords.process(recordedObservable);
+        Flowable<String> flowableOutput = bytesToWords.process(recordedObservable.toFlowable(BackpressureStrategy.BUFFER));
 
         //Pass the output stream (of words) into the rxRecorder which will subscribe to it and record all events.
-        rxRecorder.record(observableOutput, OUTPUT_FILTER);
-        observableOutput.subscribe(s -> LOG.info("HelloWorldHot->" + s),
+        rxRecorder.record(flowableOutput, OUTPUT_FILTER);
+        flowableOutput.subscribe(s -> LOG.info("HelloWorldHot->" + s),
                 throwable -> LOG.error("", throwable),
                 ()->LOG.info("HelloWorldHot Complete"));
         //Only start the recording now because we want to make sure that the BytesToWordsProcessor and the rxRecorder

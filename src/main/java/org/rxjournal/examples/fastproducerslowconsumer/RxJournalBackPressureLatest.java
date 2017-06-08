@@ -7,6 +7,7 @@ import io.reactivex.schedulers.Schedulers;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
 import org.rxjournal.impl.RxRecorder;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.rxjournal.util.DSUtil;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class RxJournalBackPressureLatest {
         //Set the replay strategy to ReplayRate.FAST as e want to process the event as soon as it is
         //received from the publisher.
         PlayOptions options = new PlayOptions().filter("input").replayRate(PlayOptions.ReplayRate.FAST);
-        ConnectableObservable journalInput = rxJournal.createRxPlayer().play(options).publish();
+        ConnectableObservable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
 
         Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
 

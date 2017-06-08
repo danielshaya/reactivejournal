@@ -1,9 +1,11 @@
 package org.rxjournal.impl;
 
-import io.reactivex.*;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import org.junit.Assert;
 import org.junit.Test;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 
 import java.io.IOException;
 import java.time.ZoneId;
@@ -51,7 +53,7 @@ public class RxErrorTest {
         rxRecorder.recordAsync(errorFlowable, "errorinput");
         rxRecorder.recordAsync(validFlowable, "validinput");
 
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("errorinput");
         Observable recordedObservable = rxPlayer.play(options);
 

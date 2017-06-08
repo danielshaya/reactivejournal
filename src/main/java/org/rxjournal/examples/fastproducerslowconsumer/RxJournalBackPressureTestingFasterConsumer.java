@@ -6,6 +6,7 @@ import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.schedulers.Schedulers;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 import org.rxjournal.util.DSUtil;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class RxJournalBackPressureTestingFasterConsumer {
         //Get the input from the recorder note that we have to set the replayRate to ACTUAL_TIME
         //to replicate the conditions in the 'real world'.
         PlayOptions options = new PlayOptions().filter("input").replayRate(ReplayRate.ACTUAL_TIME);
-        ConnectableObservable journalInput = rxJournal.createRxPlayer().play(options).publish();
+        ConnectableObservable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
 
         //Reduce the latency of the consumer to 5ms - try reducing or increasing to study the effects.
         Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(3);

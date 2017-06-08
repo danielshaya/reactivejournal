@@ -2,10 +2,8 @@ package org.rxjournal.examples.helloworld;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import org.rxjournal.impl.PlayOptions;
-import org.rxjournal.impl.RxJournal;
-import org.rxjournal.impl.RxPlayer;
-import org.rxjournal.impl.RxRecorder;
+import org.rxjournal.impl.*;
+import org.rxjournal.impl.rxjava.RxJavaPlayer;
 
 import java.io.IOException;
 
@@ -21,9 +19,9 @@ public class HelloWorld {
         Flowable<String> helloWorldFlowable = Flowable.just("Hello World!!");
         //Pass the flowable into the rxRecorder which will subscribe to it and record all events.
         RxRecorder rxRecorder = rxJournal.createRxRecorder();
-        rxRecorder.record(helloWorldFlowable);
+        rxRecorder.record(helloWorldFlowable, "");
 
-        RxPlayer rxPlayer = rxJournal.createRxPlayer();
+        RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         Observable recordedObservable = rxPlayer.play(new PlayOptions());
 
         recordedObservable.subscribe(System.out::println);

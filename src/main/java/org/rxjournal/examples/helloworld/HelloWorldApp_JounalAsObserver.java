@@ -1,7 +1,7 @@
 package org.rxjournal.examples.helloworld;
 
-import io.reactivex.Observable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.Flowable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.rxjournal.impl.RxJournal;
 import org.rxjournal.impl.RxRecorder;
 import org.rxjournal.util.DSUtil;
@@ -23,8 +23,8 @@ public class HelloWorldApp_JounalAsObserver {
     public final static String OUTPUT_FILTER = "output";
 
     public static void main(String[] args) throws IOException {
-        ConnectableObservable observableInput =
-                Observable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
+        ConnectableFlowable flowableInput =
+                Flowable.fromArray(new Byte[]{72,101,108,108,111,32,87,111,114,108,100,32}).map(
                         i->{
                             DSUtil.sleep(INTERVAL_MS);
                             return i;
@@ -37,20 +37,20 @@ public class HelloWorldApp_JounalAsObserver {
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.
         //The subscription will not be activated until 'connect' is called on the input stream.
         RxRecorder rxRecorder = rxJournal.createRxRecorder();
-        rxRecorder.record(observableInput, INPUT_FILTER);
+        rxRecorder.record(flowableInput, INPUT_FILTER);
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.
         //The subscription will not be activated until 'connect' is called on the input stream.
-        Observable<String> observableOutput = bytesToWords.process(observableInput);
+        Flowable<String> flowableOutput = bytesToWords.process(flowableInput);
 
         //Pass the output stream (of words) into the rxRecorder which will subscribe to it and record all events.
-        observableOutput.subscribe(LOG::info);
-        rxRecorder.record(observableOutput, OUTPUT_FILTER);
+        flowableOutput.subscribe(LOG::info);
+        rxRecorder.record(flowableOutput, OUTPUT_FILTER);
 
         //Activate the subscriptions
-        observableInput.connect();
+        flowableInput.connect();
 
         //Sometimes useful to see the recording written to a file
         rxJournal.writeToFile("/tmp/Demo/demo.txt",true);
