@@ -49,4 +49,15 @@ public class DataItemProcessor {
     public Object getObject() {
         return valueFromQueue;
     }
+
+    @Override
+    public String toString() {
+        return "DataItemProcessor{" +
+                "status=" + status +
+                ", messageCount=" + messageCount +
+                ", time=" + time +
+                ", storedFilter='" + storedFilter + '\'' +
+                ", valueFromQueue=" + valueFromQueue +
+                '}';
+    }
 }

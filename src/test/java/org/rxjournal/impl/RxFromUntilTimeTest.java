@@ -2,7 +2,6 @@ package org.rxjournal.impl;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.impl.rxjava.RxJavaPlayer;
@@ -44,7 +43,7 @@ public class RxFromUntilTimeTest {
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("fromuntil");
-        Observable recordedObservable = rxPlayer.play(options);
+        Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
         AtomicInteger onComplete = new AtomicInteger(0);

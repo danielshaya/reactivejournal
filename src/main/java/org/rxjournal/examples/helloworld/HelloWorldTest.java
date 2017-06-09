@@ -1,8 +1,7 @@
 package org.rxjournal.examples.helloworld;
 
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivestreams.Subscriber;
@@ -38,10 +37,10 @@ public class HelloWorldTest {
                 .replayRate(PlayOptions.ReplayRate.FAST);
         //Use a ConnectableObservable as we only want to kick off the stream when all
         //connections have been wired together.
-        ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
+        ConnectableFlowable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
-        Flowable<String> flowableOutput = bytesToWords.process(observableInput.toFlowable(BackpressureStrategy.BUFFER));
+        Flowable<String> flowableOutput = bytesToWords.process(observableInput);
 
         CountDownLatch latch = new CountDownLatch(1);
         //Send the output stream to the recorder to be validated against the recorded output

@@ -2,7 +2,7 @@ package org.rxjournal.examples.fastproducerslowconsumer;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.schedulers.Schedulers;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
@@ -29,16 +29,14 @@ public class RxJournalBackPressureLatest {
         //Set the replay strategy to ReplayRate.FAST as e want to process the event as soon as it is
         //received from the publisher.
         PlayOptions options = new PlayOptions().filter("input").replayRate(PlayOptions.ReplayRate.FAST);
-        ConnectableObservable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
-
-        Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
+        ConnectableFlowable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
 
         Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(10);
 
-        recorder.record(flowable, "consumed");
+        recorder.record(journalInput, "consumed");
 
         long startTime = System.currentTimeMillis();
-        flowable.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
+        journalInput.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
                 e -> System.out.println("RxRecorder " + " " + e),
                 () -> System.out.println("RxRecorder complete [" + (System.currentTimeMillis()-startTime) + "]")
         );

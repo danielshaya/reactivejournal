@@ -1,8 +1,7 @@
 package org.rxjournal.impl;
 
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reactivestreams.Subscriber;
@@ -30,8 +29,8 @@ public class RxPlayerTest {
     @Test
     public void testPlay() throws IOException, InterruptedException {
         //Create the rxRecorder but don't delete the cache that has been created.
-        RxJournal rxJournal = new RxJournal("src/test/resources/");
-        //rxJournal.writeToFile(tmpDir +"/rctext.txt", true);
+        RxJournal rxJournal = new RxJournal("src/test/resources/", "");
+        rxJournal.writeToFile(tmpDir +"/rctext.txt", true);
 
         //Get the input from the recorder
         RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
@@ -39,10 +38,10 @@ public class RxPlayerTest {
                 .filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
                 .replayRate(REPLAY_RATE_STRATEGY)
                 .completeAtEndOfFile(false);
-        ConnectableObservable<Byte> observableInput = rxPlayer.play(options).publish();
+        ConnectableFlowable<Byte> observableInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
-        Flowable<String> flowableOutput = bytesToWords.process(observableInput.toFlowable(BackpressureStrategy.BUFFER));
+        Flowable<String> flowableOutput = bytesToWords.process(observableInput);
 
         CountDownLatch latch = new CountDownLatch(1);
         //Send the output stream to the recorder to be validated against the recorded output

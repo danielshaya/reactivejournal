@@ -55,7 +55,7 @@ public class RxErrorTest {
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("errorinput");
-        Observable recordedObservable = rxPlayer.play(options);
+        Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
         AtomicInteger onComplete = new AtomicInteger(0);

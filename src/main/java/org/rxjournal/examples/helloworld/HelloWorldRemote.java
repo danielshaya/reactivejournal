@@ -1,8 +1,7 @@
 package org.rxjournal.examples.helloworld;
 
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
 import org.rxjournal.impl.rxjava.RxJavaPlayer;
@@ -24,10 +23,10 @@ public class HelloWorldRemote {
         RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
                 .playFromNow(true).replayRate(PlayOptions.ReplayRate.FAST);
-        ConnectableObservable<Byte> remoteInput = rxPlayer.play(options).publish();
+        ConnectableFlowable<Byte> remoteInput = rxPlayer.play(options).publish();
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
-        Flowable<String> flowableOutput = bytesToWords.process(remoteInput.toFlowable(BackpressureStrategy.BUFFER));
+        Flowable<String> flowableOutput = bytesToWords.process(remoteInput);
 
 
         flowableOutput.subscribe(

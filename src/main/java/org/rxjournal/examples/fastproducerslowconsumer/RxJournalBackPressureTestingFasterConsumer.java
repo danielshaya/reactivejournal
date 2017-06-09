@@ -1,8 +1,6 @@
 package org.rxjournal.examples.fastproducerslowconsumer;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.schedulers.Schedulers;
 import org.rxjournal.impl.PlayOptions;
 import org.rxjournal.impl.RxJournal;
@@ -12,7 +10,7 @@ import org.rxjournal.util.DSUtil;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import static org.rxjournal.impl.PlayOptions.*;
+import static org.rxjournal.impl.PlayOptions.ReplayRate;
 
 /**
  * Program to demonstrate how you can replay from the journal to test whether you have improved the
@@ -28,15 +26,13 @@ public class RxJournalBackPressureTestingFasterConsumer {
         //Get the input from the recorder note that we have to set the replayRate to ACTUAL_TIME
         //to replicate the conditions in the 'real world'.
         PlayOptions options = new PlayOptions().filter("input").replayRate(ReplayRate.ACTUAL_TIME);
-        ConnectableObservable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
+        ConnectableFlowable journalInput = new RxJavaPlayer(rxJournal).play(options).publish();
 
         //Reduce the latency of the consumer to 5ms - try reducing or increasing to study the effects.
         Consumer onNextSlowConsumer = FastProducerSlowConsumer.createOnNextSlowConsumer(3);
 
-        Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
-
         long startTime = System.currentTimeMillis();
-        flowable.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
+        journalInput.observeOn(Schedulers.io()).subscribe(onNextSlowConsumer::accept,
                 e -> System.out.println("RxRecorder " + " " + e),
                 () -> System.out.println("RxRecorder complete [" + (System.currentTimeMillis()-startTime) + "ms]")
         );

@@ -1,8 +1,7 @@
 package org.rxjournal.impl;
 
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.flowables.ConnectableFlowable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rxjournal.examples.helloworld.BytesToWordsProcessor;
@@ -46,10 +45,10 @@ public class RxRecorderTest {
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(rxJournal);
         PlayOptions options = new PlayOptions().filter("input").playFromNow(true);
-        ConnectableObservable recordedObservable = rxPlayer.play(options).publish();
+        ConnectableFlowable recordedObservable = rxPlayer.play(options).publish();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.
-        Flowable<String> flowableOutput = bytesToWords.process(recordedObservable.toFlowable(BackpressureStrategy.BUFFER));
+        Flowable<String> flowableOutput = bytesToWords.process(recordedObservable);
 
         //Pass the output stream (of words) into the rxRecorder which will subscribe to it and record all events.
         rxRecorder.record(flowableOutput, "output");
