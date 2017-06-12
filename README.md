@@ -20,7 +20,7 @@ can download with the RXJournal classes and all dependencies.
 Once downloaded you can test that it works by running:
 
 ````
-java -cp ./rxjournal-x.x.x.jar org.rxjournal.examples.helloworld.HelloWorld 
+java -cp ./rxjournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorld 
 ````
 
 ## Primary Motivations Behind RxJournal
@@ -85,7 +85,7 @@ program crashes
 
 An RxJournal is created as follows:
 
-    RxJournal rxJournal = new RxJournal(String dir);
+    RxJournal reactiveJournal = new RxJournal(String dir);
 
 The directory is the location where the serialised file will be created 
 
@@ -93,7 +93,7 @@ The directory is the location where the serialised file will be created
 `RxRecorder` allows any RxJava `Observable`/`Flowable` to be journaled to disk using 
 the `record` function:
     
-    RxRecorder rxRecorder = rxJournal.createRxRecorder();
+    RxRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
     rxRexcorder.record(Observable)
 
 For notes on threading see FAQ below.
@@ -102,8 +102,8 @@ For notes on threading see FAQ below.
 
 `RxPlayer` is used to playback the journal recording:
 
-    RxPlayer rxPlayer = rxJournal.createRxPlayer();
-    rxPlayer.play(new PlayOptions());
+    RxPlayer reactivePlayer = reactiveJournal.createRxPlayer();
+    reactivePlayer.play(new PlayOptions());
     
 There are a number of options that can be configured using `PlayOptions`. These
 include filtering the stream by time and stream. Playback speed can also be
@@ -114,7 +114,7 @@ controlled using this configuration.
 `RxJournal` is created and stored to disk using the low latency Chronicle-Queue library.
 The data can be examined in plain ASCII using the writeToDisk function:
 
-    rxJournal.writeToDisk(String fileName, boolean printToSdout)
+    reactiveJournal.writeToDisk(String fileName, boolean printToSdout)
     
 ## Putting it together with HelloWorld
 
@@ -122,14 +122,14 @@ The data can be examined in plain ASCII using the writeToDisk function:
 Full code example code [HelloWorldApp](https://github.com/danielshaya/rxjournal/blob/master/src/main/java/org/rxjournal/examples/helloworld/HelloWorld.java).
 
 ```java
-    package org.rxjournal.examples.helloworld;
+    package org.reactivejournal.examples.helloworld;
     
     import io.reactivex.Flowable;
     import io.reactivex.Observable;
-    import org.rxjournal.impl.PlayOptions;
-    import org.rxjournal.impl.RxJournal;
-    import org.rxjournal.impl.RxPlayer;
-    import org.rxjournal.impl.RxRecorder;
+    import org.reactivejournal.impl.PlayOptions;
+    import org.reactivejournal.impl.ReactiveJournal;
+    import org.reactivejournal.impl.ReactivePlayer;
+    import org.reactivejournal.impl.ReactiveRecorder;
     
     import java.io.IOException;
     
@@ -138,34 +138,34 @@ Full code example code [HelloWorldApp](https://github.com/danielshaya/rxjournal/
      */
     public class HelloWorld {
         public static void main(String[] args) throws IOException {
-            //Create the rxRecorder and delete any previous content by clearing the cache
-            RxJournal rxJournal = new RxJournal("/tmp/Demo");
-            rxJournal.clearCache();
+            //Create the reactiveRecorder and delete any previous content by clearing the cache
+            RxJournal reactiveJournal = new RxJournal("/tmp/Demo");
+            reactiveJournal.clearCache();
     
             Flowable<String> helloWorldFlowable = Flowable.just("Hello World!!");
-            //Pass the flowable into the rxRecorder which will subscribe to it and record all events.
-            RxRecorder rxRecorder = rxJournal.createRxRecorder();
-            rxRecorder.record(helloWorldFlowable);
+            //Pass the flowable into the reactiveRecorder which will subscribe to it and record all events.
+            RxRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+            reactiveRecorder.record(helloWorldFlowable);
     
-            RxPlayer rxPlayer = rxJournal.createRxPlayer();
-            Observable recordedObservable = rxPlayer.play(new PlayOptions());
+            RxPlayer reactivePlayer = reactiveJournal.createRxPlayer();
+            Observable recordedObservable = reactivePlayer.play(new PlayOptions());
     
             recordedObservable.subscribe(System.out::println);
             
             //Sometimes useful to see the recording written to a file
-            rxJournal.writeToFile("/tmp/Demo/demo.txt",true);
+            reactiveJournal.writeToFile("/tmp/Demo/demo.txt",true);
         }
     }
 ```    
 The results of running this program can be seen below:
 
 ````
-[main] INFO org.rxjournal.impl.RxJournal - Deleting existing recording [/tmp/Demo]
+[main] INFO org.reactivejournal.impl.ReactiveJournal - Deleting existing recording [/tmp/Demo]
 Hello World!!
-[main] INFO org.rxjournal.impl.RxJournal - Writing recording to dir [/tmp/Demo/demo.txt]
-[main] INFO org.rxjournal.impl.RxJournal - VALID	1	2017-05-19T08:52:27.156		Hello World!!
-[main] INFO org.rxjournal.impl.RxJournal - COMPLETE	2	2017-05-19T08:52:27.157		EndOfStream{}
-[main] INFO org.rxjournal.impl.RxJournal - Writing to dir complete
+[main] INFO org.reactivejournal.impl.ReactiveJournal - Writing recording to dir [/tmp/Demo/demo.txt]
+[main] INFO org.reactivejournal.impl.ReactiveJournal - VALID	1	2017-05-19T08:52:27.156		Hello World!!
+[main] INFO org.reactivejournal.impl.ReactiveJournal - COMPLETE	2	2017-05-19T08:52:27.157		EndOfStream{}
+[main] INFO org.reactivejournal.impl.ReactiveJournal - Writing to dir complete
 ````
 
 ## FAQ
@@ -407,7 +407,7 @@ See code snippet from the example below:
 
 ```java
     //1. Get the stream of events from the RxPlayer
-    ConnectableObservable journalInput = rxJournal.createRxPlayer().play(options).publish();
+    ConnectableObservable journalInput = reactiveJournal.createRxPlayer().play(options).publish();
 
     //2. Create a Flowable with LATEST back pressure strategy from the RxJournal stream
     Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
