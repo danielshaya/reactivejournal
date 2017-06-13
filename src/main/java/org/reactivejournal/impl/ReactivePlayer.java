@@ -10,6 +10,7 @@ import org.reactivejournal.impl.PlayOptions.PauseStrategy;
 import org.reactivejournal.impl.PlayOptions.ReplayRate;
 import org.reactivejournal.util.DSUtil;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -24,6 +25,7 @@ public class ReactivePlayer {
 
     /**
      * See documentation on {@link PlayOptions}
+     *
      * @param options Options controlling how play is executed.
      */
     public Publisher<Object> play(PlayOptions options) {
@@ -48,44 +50,57 @@ public class ReactivePlayer {
         }
     }
 
-    static final class PlaySubscription implements Subscription {
-
-        private final Subscriber actual;
-        private final ReactiveJournal reactiveJournal;
-        private final PlayOptions options;
-        private final DataItemProcessor dim = new DataItemProcessor();
-
-        private volatile boolean cancelled;
-        private final ExcerptTailer tailer;
+    private static final class PlaySubscription implements Subscription {
         private final AtomicLong counter = new AtomicLong(0);
-        private volatile boolean executing = false;
+        private final SubscriptionRunner subscriptionRunner;
 
         PlaySubscription(Subscriber<? super Object> actual, ReactiveJournal journal, PlayOptions options) {
-            this.actual = actual;
-            this.reactiveJournal = journal;
-            this.options = options;
-            ChronicleQueue queue = reactiveJournal.createQueue();
-            tailer = queue.createTailer();
+            ChronicleQueue queue = journal.createQueue();
+            subscriptionRunner = new SubscriptionRunner(actual, counter, queue.createTailer(), options);
+            Executors.newSingleThreadExecutor(runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setDaemon(true);
+                thread.setName("Subscription Runner [" + System.currentTimeMillis() + "]");
+                return thread;
+            }).submit(subscriptionRunner);
         }
 
         @Override
         public void request(long n) {
             counter.addAndGet(n);
-            if(!executing) {
-                executing = true;
-                execute();
-            }
         }
 
         @Override
         public void cancel() {
+            subscriptionRunner.setCancelled();
+        }
+    }
+
+    private static class SubscriptionRunner implements Runnable {
+        private final AtomicLong counter;
+        private final ExcerptTailer tailer;
+        private volatile boolean cancelled = false;
+        private final PlayOptions options;
+        private final Subscriber subscriber;
+        private final DataItemProcessor dim = new DataItemProcessor();
+
+        SubscriptionRunner(Subscriber subscriber, AtomicLong counter, ExcerptTailer tailer, PlayOptions options) {
+            this.counter = counter;
+            this.tailer = tailer;
+            this.options = options;
+            this.subscriber = subscriber;
+        }
+
+        void setCancelled() {
             cancelled = true;
         }
 
-        private void execute() {
-                long[] lastTime = new long[]{Long.MIN_VALUE};
-                boolean[] stop = new boolean[]{false};
-                while (counter.get() > 0) {
+        @Override
+        public void run() {
+            long[] lastTime = new long[]{Long.MIN_VALUE};
+            boolean[] stop = new boolean[]{false};
+            while (true) {
+                if (counter.get() > 0) {
                     boolean foundItem = tailer.readDocument(w -> {
                         if (cancelled) {
                             return;
@@ -95,7 +110,7 @@ public class ReactivePlayer {
 
                         if (dim.getTime() > options.playUntilTime()
                                 || dim.getMessageCount() >= options.playUntilSeqNo()) {
-                            actual.onComplete();
+                            subscriber.onComplete();
                             stop[0] = true;
                             return;
                         }
@@ -104,38 +119,36 @@ public class ReactivePlayer {
                             pause(options, lastTime, dim.getTime());
                             if (options.filter().equals(dim.getFilter())) {
                                 if (dim.getStatus() == ReactiveStatus.COMPLETE) {
-                                    actual.onComplete();
+                                    subscriber.onComplete();
                                     stop[0] = true;
                                     return;
                                 }
 
                                 if (dim.getStatus() == ReactiveStatus.ERROR) {
-                                    actual.onError((Throwable) dim.getObject());
+                                    subscriber.onError((Throwable) dim.getObject());
                                     stop[0] = true;
                                     return;
                                 }
                                 counter.decrementAndGet();
-                                actual.onNext(dim.getObject());
+                                subscriber.onNext(dim.getObject());
                             }
                             lastTime[0] = dim.getTime();
                         }
                     });
                     if (cancelled) {
-                        executing = false;
                         return;
                     }
 
                     if (!foundItem && !options.completeAtEndOfFile()) {
-                        actual.onComplete();
-                        executing = false;
+                        subscriber.onComplete();
                         return;
                     }
                     if (stop[0]) {
-                        executing = false;
                         return;
                     }
                 }
-                executing = false;
+                Thread.yield();
+            }
         }
 
         private void pause(PlayOptions options, long[] lastTime, long recordedAtTime) {
