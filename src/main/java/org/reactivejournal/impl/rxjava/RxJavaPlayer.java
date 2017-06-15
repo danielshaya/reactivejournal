@@ -8,14 +8,14 @@ import org.reactivejournal.impl.ReactivePlayer;
 /**
  * A specific RxJava implementation of ReactivePlayer.
  */
-public class RxJavaPlayer {
+public class RxJavaPlayer<T> {
     private ReactivePlayer reactivePlayer;
 
     public RxJavaPlayer(ReactiveJournal reactiveJournal){
         reactivePlayer = reactiveJournal.createRxPlayer();
     }
 
-    public Flowable play(PlayOptions options){
+    public Flowable<T> play(PlayOptions options){
         return Flowable.fromPublisher(reactivePlayer.play(options));
     }
 }

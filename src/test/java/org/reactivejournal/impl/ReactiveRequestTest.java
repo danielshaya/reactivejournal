@@ -50,7 +50,7 @@ public class ReactiveRequestTest {
         reactiveRecorder.recordAsync(errorFlowable, "request");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("request");
+        PlayOptions options = new PlayOptions().filter("request").sameThreadMaxRequests(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
