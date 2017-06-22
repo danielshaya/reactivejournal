@@ -14,8 +14,8 @@ public class PlayOptions {
     private long playUntilTime = Long.MAX_VALUE;
     private long playFromSeqNo = Long.MIN_VALUE;
     private long playUntilSeqNo = Long.MAX_VALUE;
-    private boolean waitForMoreItems = true;
-    private boolean sameThreadMaxRequests = false;
+    private boolean completeAtEndOfFile = false;
+    private boolean sameThread = false;
 
     String filter() {
         return filter;
@@ -172,7 +172,7 @@ public class PlayOptions {
     }
 
     boolean completeAtEndOfFile() {
-        return waitForMoreItems;
+        return completeAtEndOfFile;
     }
 
     /**
@@ -183,25 +183,22 @@ public class PlayOptions {
      * @return PlayOptions for use in the Builder pattern
      */
     public PlayOptions completeAtEndOfFile(boolean waitForMoreItems) {
-        this.waitForMoreItems = waitForMoreItems;
+        this.completeAtEndOfFile = waitForMoreItems;
         return this;
     }
 
-    boolean sameThreadMaxRequests() {
-        return sameThreadMaxRequests;
+    boolean sameThread() {
+        return sameThread;
     }
 
     /**
      * By default the subscriber will be called back on a different thread.
-     * This is that it can support the normal back pressure rules of a Producer.
-     * If the paramter in this method is set to true then RxJava will not respect the normal
-     * ruels of a Producer and ignore calls to request and leave the caller to handle the
-     * threading. (This is needs to be exaplained better).
-     * @param sameThreadMaxRequests set the callback on the same thread
+     *
+     * @param sameThread set the callback on the same thread
      * @return PlayOptions for use in the Builder pattern
      */
-    public PlayOptions sameThreadMaxRequests(boolean sameThreadMaxRequests) {
-        this.sameThreadMaxRequests = sameThreadMaxRequests;
+    public PlayOptions sameThread(boolean sameThread) {
+        this.sameThread = sameThread;
         return this;
     }
 

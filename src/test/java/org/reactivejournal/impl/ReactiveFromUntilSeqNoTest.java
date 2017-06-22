@@ -36,7 +36,7 @@ public class ReactiveFromUntilSeqNoTest {
         reactiveRecorder.recordAsync(errorFlowable, "fromuntil");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("fromuntil").sameThreadMaxRequests(true);
+        PlayOptions options = new PlayOptions().filter("fromuntil").sameThread(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
@@ -60,7 +60,7 @@ public class ReactiveFromUntilSeqNoTest {
                 .replayRate(PlayOptions.ReplayRate.FAST)
                 .playFromSeqNo(2)
                 .playUntilSeqNo(3)
-                .sameThreadMaxRequests(true);
+                .sameThread(true);
         recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNextFromUntil = new AtomicInteger(0);

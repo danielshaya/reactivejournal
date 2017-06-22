@@ -39,7 +39,7 @@ public class ReactiveReplayRateTest {
         reactiveRecorder.record(errorFlowable, "replayRateTest");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("replayRateTest").sameThreadMaxRequests(true);
+        PlayOptions options = new PlayOptions().filter("replayRateTest").sameThread(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
@@ -75,7 +75,7 @@ public class ReactiveReplayRateTest {
         rxPlayer = new RxJavaPlayer(reactiveJournal);
         options = new PlayOptions().filter("replayRateTest")
                 .replayRate(PlayOptions.ReplayRate.FAST)
-                .sameThreadMaxRequests(true);
+                .sameThread(true);
         recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNextFast = new AtomicInteger(0);

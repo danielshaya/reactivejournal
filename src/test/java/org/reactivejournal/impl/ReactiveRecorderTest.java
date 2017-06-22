@@ -44,7 +44,7 @@ public class ReactiveRecorderTest {
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("input").playFromNow(true).sameThreadMaxRequests(true);
+        PlayOptions options = new PlayOptions().filter("input").playFromNow(true).sameThread(true);
         ConnectableFlowable recordedObservable = rxPlayer.play(options).publish();
         //Pass the input Byte stream into the BytesToWordsProcessor class which subscribes to the stream and returns
         //a stream of words.

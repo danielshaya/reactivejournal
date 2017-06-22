@@ -42,7 +42,7 @@ public class ReactiveFromUntilTimeTest {
         reactiveRecorder.recordAsync(errorFlowable, "fromuntil");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("fromuntil").sameThreadMaxRequests(true);
+        PlayOptions options = new PlayOptions().filter("fromuntil").sameThread(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
@@ -65,7 +65,7 @@ public class ReactiveFromUntilTimeTest {
                 .replayRate(PlayOptions.ReplayRate.FAST)
                 .playFromTime(time[0] + 200)
                 .playUntilTime(time[0] + 1100)
-                .sameThreadMaxRequests(true);
+                .sameThread(true);
         recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNextFromUntil = new AtomicInteger(0);

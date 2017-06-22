@@ -53,7 +53,7 @@ public class ReactiveErrorTest {
         reactiveRecorder.recordAsync(validFlowable, "validinput");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("errorinput").sameThreadMaxRequests(true);
+        PlayOptions options = new PlayOptions().filter("errorinput").sameThread(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
@@ -77,7 +77,7 @@ public class ReactiveErrorTest {
         Assert.assertEquals(rte.getStackTrace()[0], tArray[0].getStackTrace()[0]);
 
         rxPlayer = new RxJavaPlayer(reactiveJournal);
-        options = new PlayOptions().filter("validinput").sameThreadMaxRequests(true);
+        options = new PlayOptions().filter("validinput").sameThread(true);
         recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNextValid = new AtomicInteger(0);
