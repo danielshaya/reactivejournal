@@ -29,12 +29,13 @@ public class HelloWorldTest {
     public void testHelloWorld() throws IOException, InterruptedException {
         //Create the rxRecorder but don't delete the cache that has been created.
         ReactiveJournal reactiveJournal = new ReactiveJournal(HelloWorldApp_JounalAsObserver.FILE_NAME);
+        //reactiveJournal.writeToFile("/tmp/Demo/demo.txt", true);
 
         //Get the input from the recorder
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
         //In this case we can play the data stream in FAST mode.
         PlayOptions options= new PlayOptions().filter(HelloWorldApp_JounalAsObserver.INPUT_FILTER)
-                .replayRate(PlayOptions.ReplayRate.FAST);
+                .replayRate(PlayOptions.ReplayRate.FAST).sameThread(true);
         //Use a ConnectableObservable as we only want to kick off the stream when all
         //connections have been wired together.
         ConnectableFlowable<Byte> observableInput = rxPlayer.play(options).publish();
@@ -45,11 +46,11 @@ public class HelloWorldTest {
         CountDownLatch latch = new CountDownLatch(1);
         //Send the output stream to the recorder to be validated against the recorded output
         ReactiveValidator reactiveValidator = reactiveJournal.createRxValidator();
-        reactiveValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME,
+        reactiveValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME + "/.rxJournal",
                 flowableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER, new Subscriber() {
                     @Override
                     public void onSubscribe(Subscription subscription) {
-
+                        subscription.request(Long.MAX_VALUE);
                     }
 
                     @Override
@@ -72,7 +73,7 @@ public class HelloWorldTest {
                 });
 
         observableInput.connect();
-        boolean completedWithoutTimeout = latch.await(2, TimeUnit.SECONDS);
+        boolean completedWithoutTimeout = latch.await(200, TimeUnit.SECONDS);
         Assert.assertEquals(ValidationResult.Result.OK, reactiveValidator.getValidationResult().getResult());
         Assert.assertTrue(completedWithoutTimeout);
     }

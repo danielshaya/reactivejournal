@@ -6,7 +6,7 @@ package org.reactivejournal.impl;
  */
 public class PlayOptions {
     private String filter = "";
-    private ReplayRate replayRate = ReplayRate.ACTUAL_TIME;
+    private ReplayRate replayRate = ReplayRate.FAST;
     private PauseStrategy pauseStrategy = PauseStrategy.YIELD;
     private Object using = null;
     private boolean playFromNow = false;
@@ -94,10 +94,6 @@ public class PlayOptions {
     public PlayOptions using(Object using) {
         this.using = using;
         return this;
-    }
-
-    boolean playFromNow() {
-        return playFromNow;
     }
 
     /**

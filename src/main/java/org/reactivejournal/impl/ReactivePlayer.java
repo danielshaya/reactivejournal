@@ -84,6 +84,7 @@ public class ReactivePlayer<T> {
                             if (drain()) {
                                 return;
                             }
+                            Thread.yield();
                         }
                     });
                 }
@@ -117,7 +118,7 @@ public class ReactivePlayer<T> {
                 }
 
                 boolean empty = nextItemFromQueue(tailer, options, dim);
-                //System.out.println("Next item from was empty? " + empty);
+                 //System.out.println("2. Next item from was empty? " + empty);
                 if (empty) {
                     if (options.completeAtEndOfFile()) {
                         subscriber.onComplete();
@@ -125,39 +126,49 @@ public class ReactivePlayer<T> {
                         return true;
                     }
                     //wait for next event to appear in the journal
+                    pauseStrategy(options);
                     continue;
                 }
 
                 if (!itemMatchingFilter(options, dim)) {
-                    //System.out.println("Item did not match filter");
+                  //  System.out.println("3. Item did not match filter");
                     //wait for next matching event to appear in the journal
+                    pauseStrategy(options);
                     continue;
                 }
 
-                //System.out.println("About to pause for actual time");
+                //System.out.println("4. About to pause for actual time");
                 if (options.replayRate() == ReplayRate.ACTUAL_TIME) {
                     pauseForActualTime(lastTime, dim);
                 }
-                //System.out.println("After to pause for actual time");
+                //System.out.println("5. After to pause for actual time");
 
                 //is there an error
                 if (dim.getStatus() == ReactiveStatus.ERROR) {
+                    //System.out.println("5. Error");
                     subscriber.onError((Throwable) dim.getObject());
                     return true;
                 }
 
                 //is the request complete
                 if (isComplete(options, dim)) {
+                  //  System.out.println("5. Complete");
                     subscriber.onComplete();
                     return true;
                 }
 
-                //System.out.println("4 returning object " + dim.getObject() + " requested " + requested);
+                //System.out.println("6. returning object " + dim.getObject() + " requested " + requested);
                 subscriber.onNext((T) dim.getObject());
                 requested.decrementAndGet();
             }
             return false;
             // if a concurrent getAndIncrement() happened, we loop back and continue
+        }
+
+        private void pauseStrategy(PlayOptions options) {
+            if(options.pauseStrategy()== PlayOptions.PauseStrategy.YIELD){
+                Thread.yield();
+            }
         }
 
     }

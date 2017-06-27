@@ -20,7 +20,7 @@ can download with the RXJournal classes and all dependencies.
 Once downloaded you can test that it works by running:
 
 ````
-java -cp ./rxjournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorld 
+java -cp ./rxjournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorldUsingRxJava 
 ````
 
 ## Primary Motivations Behind RxJournal

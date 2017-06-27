@@ -12,15 +12,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * Created by daniel on 17/05/17.
+ * Test designed to test ACTUAL_TIME vs FAST
  */
 public class ReactiveReplayRateTest {
     @Test
     public void replayRateTest() throws IOException {
-        long[] time = new long[1];
         Flowable<String> errorFlowable = Flowable.create(
                 e -> {
-                    time[0] = System.currentTimeMillis();
                     e.onNext("one");
                     DSUtil.sleep(1000);
                     e.onNext("two");
@@ -39,7 +37,10 @@ public class ReactiveReplayRateTest {
         reactiveRecorder.record(errorFlowable, "replayRateTest");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
-        PlayOptions options = new PlayOptions().filter("replayRateTest").sameThread(true);
+        PlayOptions options = new PlayOptions()
+                .filter("replayRateTest")
+                .replayRate(PlayOptions.ReplayRate.ACTUAL_TIME)
+                .sameThread(true);
         Flowable recordedObservable = rxPlayer.play(options);
 
         AtomicInteger onNext = new AtomicInteger(0);
