@@ -20,7 +20,7 @@ import java.time.ZoneId;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * RxJournal
+ * ReactiveJournal
  */
 public class ReactiveJournal {
     private static final Logger LOG = LoggerFactory.getLogger(ReactiveJournal.class.getName());
@@ -28,31 +28,31 @@ public class ReactiveJournal {
     /**
      * The default name for the data directory.
      */
-    public static final String RXJOURNAL_DIRNAME = ".rxJournal";
+    public static final String REACTIVE_JOURNAL_DIRNAME = ".reactiveJournal";
 
     private String dir;
     private final AtomicLong messageCounter = new AtomicLong(0);
 
     /**
-     * Create an {@link ReactiveJournal} that will store or read its data from the {@value RXJOURNAL_DIRNAME} directory
+     * Create an {@link ReactiveJournal} that will store or read its data from the {@value REACTIVE_JOURNAL_DIRNAME} directory
      * inside the given {@literal baseDir}. Use {@link #getDir()} to obtain the full path of said directory, and
-     * {@link #clearCache()} to clean that directory of RxJournal-specific files.
+     * {@link #clearCache()} to clean that directory of ReactiveJournal-specific files.
      *
-     * @param baseDir the base directory into which the RxJournal will create a RxJournal-dedicated data directory {@value RXJOURNAL_DIRNAME}.
+     * @param baseDir the base directory into which the ReactiveJournal will create a ReactiveJournal-dedicated data directory {@value REACTIVE_JOURNAL_DIRNAME}.
      * @see #getDir()
      * @see #clearCache()
      */
     public ReactiveJournal(String baseDir){
-        this.dir = Paths.get(baseDir, RXJOURNAL_DIRNAME).toString();
+        this.dir = Paths.get(baseDir, REACTIVE_JOURNAL_DIRNAME).toString();
     }
 
     /**
      * Create an {@link ReactiveJournal} that will store or read its data from the {@literal journalName} directory
      * inside the given {@literal baseDir}. Use {@link #getDir()} to obtain the full path of said directory, and
-     * {@link #clearCache()} to clean that directory of RxJournal-specific files.
+     * {@link #clearCache()} to clean that directory of ReactiveJournal-specific files.
      *
-     * @param baseDir the base directory into which the RxJournal will create a RxJournal-dedicated data directory.
-     * @param journalName the name to use for this RxJournal's data directory, instead of the default {@value RXJOURNAL_DIRNAME}.
+     * @param baseDir the base directory into which the ReactiveJournal will create a ReactiveJournal-dedicated data directory.
+     * @param journalName the name to use for this ReactiveJournal's data directory, instead of the default {@value REACTIVE_JOURNAL_DIRNAME}.
      * @see #getDir()
      * @see #clearCache()
      */
@@ -60,31 +60,31 @@ public class ReactiveJournal {
         this.dir = Paths.get(baseDir, journalName).toString();
     }
 
-    public ReactiveRecorder createRxRecorder(){
+    public ReactiveRecorder createReactiveRecorder(){
         return new ReactiveRecorder(this);
     }
 
-    public ReactivePlayer createRxPlayer(){
+    public ReactivePlayer createReactivePlayer(){
         return new ReactivePlayer(this);
     }
 
-    public ReactiveValidator createRxValidator(){
+    public ReactiveValidator createReactiveValidator(){
         return new ReactiveValidator();
     }
 
     /**
-     * Return the path to the RxJournal-specific directory used to store binary representation of the journal on disk.
-     * This directory is one level deeper than the base directory initially passed to RxJournal's
+     * Return the path to the ReactiveJournal-specific directory used to store binary representation of the journal on disk.
+     * This directory is one level deeper than the base directory initially passed to ReactiveJournal's
      * {@link ReactiveJournal#ReactiveJournal(String) constructor}.
      *
-     * @return the path to the RxJournal specific directory.
+     * @return the path to the ReactiveJournal specific directory.
      */
     public String getDir() {
         return dir;
     }
 
     /**
-     * Clear this RxJournal's {@link #getDir() data directory} from RxJournal-specific binary files, and remove it as
+     * Clear this ReactiveJournal's {@link #getDir() data directory} from ReactiveJournal-specific binary files, and remove it as
      * well (but only if it has become empty). If other files have been created inside the data directory, it is the
      * responsibility of the user to delete them AND the data directory.
      *

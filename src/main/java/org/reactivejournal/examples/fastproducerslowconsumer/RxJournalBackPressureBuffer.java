@@ -20,7 +20,7 @@ public class RxJournalBackPressureBuffer {
         reactiveJournal.clearCache();
         Flowable<Long> fastProducer = FastProducerSlowConsumer.createFastProducer(BackpressureStrategy.MISSING, 500);
 
-        reactiveJournal.createRxRecorder().recordAsync(fastProducer,"input");
+        reactiveJournal.createReactiveRecorder().recordAsync(fastProducer,"input");
         PlayOptions options = new PlayOptions().filter("input").replayRate(PlayOptions.ReplayRate.FAST);
         Flowable journalInput = new RxJavaPlayer(reactiveJournal).play(options);
 

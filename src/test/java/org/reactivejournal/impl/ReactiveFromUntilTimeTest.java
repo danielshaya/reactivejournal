@@ -38,7 +38,7 @@ public class ReactiveFromUntilTimeTest {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(errorFlowable, "fromuntil");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);

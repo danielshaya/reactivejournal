@@ -45,8 +45,8 @@ public class HelloWorldTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         //Send the output stream to the recorder to be validated against the recorded output
-        ReactiveValidator reactiveValidator = reactiveJournal.createRxValidator();
-        reactiveValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME + "/.rxJournal",
+        ReactiveValidator reactiveValidator = reactiveJournal.createReactiveValidator();
+        reactiveValidator.validate(HelloWorldApp_JounalAsObserver.FILE_NAME + "/.reactiveJournal",
                 flowableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER, new Subscriber() {
                     @Override
                     public void onSubscribe(Subscription subscription) {

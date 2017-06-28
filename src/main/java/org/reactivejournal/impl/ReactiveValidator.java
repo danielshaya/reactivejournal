@@ -66,7 +66,6 @@ public class ReactiveValidator {
 
     private Object getNextMatchingFilter(ExcerptTailer tailer, String filter) {
         nextItemFromQueue(tailer, dataItemProcessor);
-        System.out.println(dataItemProcessor);
         if (dataItemProcessor.getFilter().equals(filter)) {
             return dataItemProcessor.getObject();
         } else {

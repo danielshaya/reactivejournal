@@ -45,7 +45,7 @@ public class ReactivePlayerTest {
 
         CountDownLatch latch = new CountDownLatch(1);
         //Send the output stream to the recorder to be validated against the recorded output
-        ReactiveValidator reactiveValidator = reactiveJournal.createRxValidator();
+        ReactiveValidator reactiveValidator = reactiveJournal.createReactiveValidator();
         reactiveValidator.validate("src/test/resources/",
                 flowableOutput, HelloWorldApp_JounalAsObserver.OUTPUT_FILTER, new Subscriber() {
                     @Override

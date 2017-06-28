@@ -4,7 +4,6 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import org.junit.Assert;
 import org.junit.Test;
-import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.reactivejournal.impl.rxjava.RxJavaPlayer;
@@ -50,7 +49,7 @@ public class ReactiveRequestTest {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(errorFlowable, "request");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
@@ -139,7 +138,7 @@ public class ReactiveRequestTest {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(errorFlowable, "request");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);
@@ -230,7 +229,7 @@ public class ReactiveRequestTest {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(errorFlowable, "request");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);

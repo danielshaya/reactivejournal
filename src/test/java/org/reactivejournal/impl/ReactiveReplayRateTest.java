@@ -33,7 +33,7 @@ public class ReactiveReplayRateTest {
 
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.record(errorFlowable, "replayRateTest");
 
         RxJavaPlayer rxPlayer = new RxJavaPlayer(reactiveJournal);

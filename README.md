@@ -1,38 +1,36 @@
-# RxJournal
+# ReactiveJournal
 
-## Note README needs to be updated for latest version of code which will be done shortly.
-### RxJounal now supports all Reactive implementations not just RxJava
-
-RxJournal augments the popular [RxJava](https://github.com/ReactiveX/RxJava) library by adding 
+ReactiveJournal supports [Reactive](//todo) libraries by adding 
 functionality to record and replay reactive streams. 
 
 ## Downloading the project
 
 ### Maven
-RxJournal is a Maven project so you can clone the project and build in the usual way.
+ReactiveJournal is a Maven project so you can clone the project and build in the usual way.
 
 The intention is for this project to make its way into Maven Central (work in progress).
 
 ### Download the jar
 Go to the releases section of the project. With each release there will be an uber jar that you 
-can download with the RXJournal classes and all dependencies.
+can download with the ReactiveJournal classes and all dependencies.
 
 Once downloaded you can test that it works by running:
 
+//todo update this when release
 ````
-java -cp ./rxjournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorldUsingRxJava 
+java -cp ./ReactiveJournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorldUsingRxJava 
 ````
 
-## Primary Motivations Behind RxJournal
+## Primary Motivations Behind ReactiveJournal
 
 ### 1. Testing
 
-Testing is a primary motivation for RxJournal. RxJournal allows developers to
+Testing is a primary motivation for `ReactiveJournal`. `ReactiveJournal` allows developers to
 black box test their code by recording all inputs and outputs in and out of their programs.
 
-An obvious use case are unit tests where RxJournal recordings can be used to create
+An obvious use case are unit tests where ReactiveJournal recordings can be used to create
 comprehensive tests (see [HelloWorldTest](todo) for an example). This example makes use of
-`RxValidator` which allows unit tests to compare their results against previously
+`ReactiveValidator` which allows unit tests to compare their results against previously
 recorded results in the journal.
 
 Another powerful use case is to enable users to replay production data into test systems. 
@@ -41,7 +39,8 @@ into a test system the exact conditions of the primary system will be reproduced
 
 ### 2. Remote Connections
 
-`RxJournal` can be recorded on one JVM and can be replayed (in real-time if required) on one or more 
+`ReactiveJournal` can be recorded on one JVM and can be replayed (in real-time if required) 
+on one or more 
 JVMs provided they have access to the journal file location.  
 
 The remote connection can either read from the beginning of the recording or just start with live 
@@ -49,7 +48,8 @@ updates from the recorder. The remote connection (the 'listener') can optionally
 journal effecting a two way conversation or RPC. There can be multiple readers and writers to the
 journal.
 
-`RxJournal` uses [Chronicle-Queue](todo) (a memory mapped file solution) serialisation meaning that
+`ReactiveJournal` uses [Chronicle-Queue](todo) (a memory mapped file solution) 
+serialisation meaning that
 the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
 in single digit micro seconds. 
 
@@ -78,32 +78,32 @@ See more about this topic below in the [Examples](todo) section
 program crashes
 - Recording and playback is so fast that it won't slow down the host program.
 - Recording and playback can be achieved without any gc overhead
-- RxRecorder can be easily added (or even retro-fitted) into any RxJava project
+- RxRecorder can be easily added (or even retro-fitted) into any `Reactive` project
 
 # Quick Start
 ## Creating a Journal
 
-An RxJournal is created as follows:
+An `ReactiveJournal` is created as follows:
 
-    RxJournal reactiveJournal = new RxJournal(String dir);
+    ReactiveJournal reactiveJournal = new ReactiveJournal(String dir);
 
 The directory is the location where the serialised file will be created 
 
 ## Recording a reactive stream
-`RxRecorder` allows any RxJava `Observable`/`Flowable` to be journaled to disk using 
+`ReactiveRecorder` allows any Reactive [`Publisher`](//todo) to be journaled to disk using 
 the `record` function:
     
-    RxRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
-    rxRexcorder.record(Observable)
+    ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
+    reactiveRexcorder.record(Publisher)
 
 For notes on threading see FAQ below.
 
 ## Playing back a reactive stream
 
-`RxPlayer` is used to playback the journal recording:
+`ReactivePlayer` is used to playback the journal recording:
 
-    RxPlayer reactivePlayer = reactiveJournal.createRxPlayer();
-    reactivePlayer.play(new PlayOptions());
+    ReactivePlayer reactivePlayer = reactiveJournal.createReactivePlayer();
+    Publisher = reactivePlayer.play(new PlayOptions());
     
 There are a number of options that can be configured using `PlayOptions`. These
 include filtering the stream by time and stream. Playback speed can also be
@@ -111,15 +111,16 @@ controlled using this configuration.
 
 ## Viewing the contents of a journal
 
-`RxJournal` is created and stored to disk using the low latency Chronicle-Queue library.
+`ReactiveJournal` is created and stored to disk using the low latency Chronicle-Queue library.
 The data can be examined in plain ASCII using the writeToDisk function:
 
     reactiveJournal.writeToDisk(String fileName, boolean printToSdout)
-    
+
+//todo new version od code
 ## Putting it together with HelloWorld
 
 
-Full code example code [HelloWorldApp](https://github.com/danielshaya/rxjournal/blob/master/src/main/java/org/rxjournal/examples/helloworld/HelloWorld.java).
+Full code example code [HelloWorldApp](https://github.com/danielshaya/ReactiveJournal/blob/master/src/main/java/org/ReactiveJournal/examples/helloworld/HelloWorld.java).
 
 ```java
     package org.reactivejournal.examples.helloworld;
@@ -139,7 +140,7 @@ Full code example code [HelloWorldApp](https://github.com/danielshaya/rxjournal/
     public class HelloWorld {
         public static void main(String[] args) throws IOException {
             //Create the reactiveRecorder and delete any previous content by clearing the cache
-            RxJournal reactiveJournal = new RxJournal("/tmp/Demo");
+            ReactiveJournal reactiveJournal = new ReactiveJournal("/tmp/Demo");
             reactiveJournal.clearCache();
     
             Flowable<String> helloWorldFlowable = Flowable.just("Hello World!!");
@@ -170,9 +171,9 @@ Hello World!!
 
 ## FAQ
 
-### What types of data can be serialised by RxJournal
+### What types of data can be serialised by ReactiveJournal
 
-Items that can be serialised to RXJournal are those that can be serialised to 
+Items that can be serialised to ReactiveJournal are those that can be serialised to 
 Chronicle-Queue.
 
 These are:
@@ -183,38 +184,37 @@ These are:
 
 See [Chronicle Queue Docs](https://github.com/OpenHFT/Chronicle-Queue#restrictions-on-topics-and-messages) for full documentation
 
-### Flowable or Observable?
+### How to use in conjunction with Reactive implementations such as RxJava and React?
 
-RxJava2 is divided into 2 types of streams `Flowable` which support back pressure
-and `Observable` which do not support back pressure.
+`ReactiveJava` has been designed be used with any [Reactive](//todo) implentation 
+such as [RxJava](//todo) and [React](//todo).
 
-In terms of recording, `RxRecorder` supports both `Flowable` and `Observable`.  A subscription
-is made to either and the data recorded is serialised into `RxJournal`.
+For example if you had an RxJava `Flowable`, because `Flowable` implements `Publisher`, 
+you could use the `Flowable` as input to 
+`ReactiveRecorder.record()` which takes a `Publisher`. If you have an RxJava
+`Observable` you would have to convert it to a `Flowable` with `Observable.toFlowable()`
+first.
 
-On the other hand, `RxPlayer` returns an `Observable` because by definition there will be
-no back pressure to worry about. 
+`ReactivePlayer` returns a `Publisher` that can be converted to `Flowable` with
+ `Flowable.fromPublisher(reactivePlayer.play(options))`. There is utility class
+ `RxPlayer` that does this for the RxJava user. 
 
-The consumer of this Observable can process the events at 
-their own speed backed up the guarantee that every item has been recorded into the journal.
-If you want only the latest event (the events are replaceable) you can play the 
-Observable into a Flowable that gives you the latest item. You will have a full
-record of the complete stream of events whether they were dropped or not. You can even
-record the processed event into the RxJournal again under a different filter. If you want a
-record of the events that were actually processed.
 
-### RxJournal on the critical path or as another subscriber 
+
+### ReactiveJournal on the critical path or as another subscriber 
  
-There are 2 ways you might want to set up your `RxJournal`.
+There are 2 ways you might want to set up your `ReactiveJournal`.
 
-1. Record your `Observable`/`Flowable` input into `RxJournal` and then have your processor subscribe to
-`RxJournal` for its stream of events. This effectively inserts `RxJournal` into the critical path of
-your program. This will certainly be the setup if you are using RxJava to handle back pressure.
+1. Record your `Publisher` input into `ReactiveJournal` and then subscribe to
+`ReactiveJournal` for its stream of events. This effectively inserts `ReactiveJournal` into the critical path of
+your program. This will certainly be the setup if you are using ReactiveJournal to handle back pressure.
 This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](todo)
 
-2. Have `RxJournal` as a second subscriber to your `Observable` input data. This has the benefit
-of keeping all functions on the same thread. This might be the setup if you are using `RxJournal`
-to record data for testing purposes. You might want to use the `ConnectableObservable` paradigm
-for cold Observables as you probably don't want RxRecorder kicking off the connection until
+2. Have `ReactiveJournal` as a second subscriber to your `Publisher`. This has the benefit
+of keeping all functions on the same thread. This might be the setup if you are using `ReactiveJournal`
+to record data for testing purposes. If you are using RxJava you might want to use 
+the `ConnectableObservable` paradigm
+as you won't want ReactiveRecorder kicking off the connection until
 all the other connections have been setup. 
 This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](todo)
 
@@ -224,11 +224,11 @@ The `RxPlayer` can `play` in two modes:
 * `ACTUAL_TIME` This plays back the stream preserving the time gaps between the events. This is
 important for back testing and reproducing exact conditions in unit tests.
 * `FAST` This plays the events as soon as they are recieved. Use this when you are using 
-RxJournal for remote connections or when using RxJounal to deal with back pressure.
+ReactiveJournal for remote connections or when using RxJounal to deal with back pressure.
 
-### Can RxJournal be used in a low latency environment
+### Can ReactiveJournal be used in a low latency environment
 
-The intention is for `RxJournal` to support low latency programs. The two main features to allow
+The intention is for `ReactiveJournal` to support low latency programs. The two main features to allow
 for this are:
 * Dedicating a CPU core to RxPlayer by using the FAST setting described above so that we don't have 
 any context switching.
@@ -245,11 +245,11 @@ use cases and are worth considering in more detail.
 This program demonstrates how to set up a simple 'play through' example.
  
 We have an input `Flowable` with a stream of `Byte`s. These are recorded in the journal 
-by `RxRecorder`.
+by `ReactiveRecorder`.
 
-We then subscribe to `RxJournal` with `RxPlayer` giving us an `Observable` of `Bytes`
+We then subscribe to `ReactiveJournal` with `ReactivePlayer` giving us an `Flowable` of `Byte`s
 which are processed by the `BytesToWordsProcessor`. The output of the processor is 
-also recorded into `RxJournal` so we have a full record of all our input and outputs to
+also recorded into `ReactiveJournal` so we have a full record of all our input and outputs to
 the program.
 
 Note that we use `recordAsync` rather than `record` because otherwise we would 
@@ -269,7 +269,7 @@ This recording will be valuable when it comes to writing a unit test for
 
 This is very similar to the last example except that we processes everything 
 on the same thread. We can do this because rather than the `BytesToWordsProcessor`
-subscribing to `RxJournal` it subscribes directly to the `Observable<Byte>` input.
+subscribing to `ReactiveJournal` it subscribes directly to the `Observable<Byte>` input.
 
 This is a less intrusive way to insert RxRecorder into your project but of
 course will not handle the back pressure problem.
@@ -278,7 +278,7 @@ course will not handle the back pressure problem.
 
 This example demonstrates how to use RxRecorder in a unit test. The journal file
 we created in the previous examples is used as input to test the `BytesToWordsProcessor`.
-The results of `BytesToWordsProcessor` are fed into `RxValidator` which compares 
+The results of `BytesToWordsProcessor` are fed into `ReactiveValidator` which compares 
 the output to the output which was recorded in the journal reporting any 
 differences. 
 
@@ -288,7 +288,7 @@ behaviour.
 
 ### HelloWorldRemote
 
-This example is designed to show how RxJOurnal can be used to tranfer data between JVMs.
+This example is designed to show how ReactiveJournal can be used to tranfer data between JVMs.
 
 Start `HelloWorldApp_JournalPlayThrough` but increase the `INTERVAL_MS` to 1000. Then
 run `HelloWorldRemote`.
@@ -361,9 +361,9 @@ problems with this straegy are:
 as soon as back pressure is encountered. This is useful when you don't expect any back pressure
 and you want the program to error on encountering back pressure. 
 
-#### RxJournalBackPressureBuffer
+#### ReactiveJournalBackPressureBuffer
 
-In this program we set up `RxJournal` to handle back pressure in the buffer mode 
+In this program we set up `ReactiveJournal` to handle back pressure in the buffer mode 
 but solving all the problems that we saw with the standard RxJava `BUFFER` mode.
 
 The FastProducer can be created with
@@ -372,18 +372,18 @@ slowed down by the consumer, which in this case is `RxRecorder`.
 
 The Consumer, rather than subscribing directly to the FastProducer, subscribes to 
 `RxPlayer`.  Note that `RxPlayer.play` returns an `Obserable` as there is no need for it to
-handle back pressure because bakc pressure has already been applied using `RxJournal` as the 
+handle back pressure because bakc pressure has already been applied using `ReactiveJournal` as the 
 buffer.
 
 Lets look at the problems `BackpressureStrategy.MISSING` and see how they are solved.
     
-* Even if the program crashes everything written to RxJournal is safe. The events will be stored
+* Even if the program crashes everything written to ReactiveJournal is safe. The events will be stored
     to disk and you can just restart the program and carry on consuming the queue at the point 
     you crashed.  If there is a OS/Machine level issue it is possible that a few messages might
     get lost that are waiting to be written to disk.  
     If that is a problem you should make sure that replication is setup on your system.
 * There is no in-memory buffer so there is no need to run with extra heap memory and the program
-certainly won't run out memory because of `RxJournal`. 
+certainly won't run out memory because of `ReactiveJournal`. 
 * When you call `RxPlayer.play` one of the the options is `using`. This allows you to pass in the
 object that will be used for every event. This means that no new objects will be allocated even
 if you have millions of items in your stream. (Of course if you want to hole a reference to the
@@ -393,13 +393,13 @@ In addition to those benefits you will have the ususal benefits of using 'RxJorn
 will have a full record of the stream to use in testing and you will be able to use remote
 JVMs.
 
-#### RxJournalBackPressureLatest
+#### ReactiveJournalBackPressureLatest
 
-As its name implies this demo program shows you how to handle back pressure using `RxJournal`
+As its name implies this demo program shows you how to handle back pressure using `ReactiveJournal`
 but rather than buffer you just want the latest item on the queue.
 
 All you have to do is set up the program exactly as we did in the previous example 
-`RxJournalBackPressureBuffer` but rather than the slow subscriber subscribing to the Observable
+`ReactiveJournalBackPressureBuffer` but rather than the slow subscriber subscribing to the Observable
 that comes from `RxPlayer.play` we insert a `Flowable` inbetween. The `Flowable` is created 
 with `BackpressureStrategy.LATEST`.
 
@@ -409,7 +409,7 @@ See code snippet from the example below:
     //1. Get the stream of events from the RxPlayer
     ConnectableObservable journalInput = reactiveJournal.createRxPlayer().play(options).publish();
 
-    //2. Create a Flowable with LATEST back pressure strategy from the RxJournal stream
+    //2. Create a Flowable with LATEST back pressure strategy from the ReactiveJournal stream
     Flowable flowable = journalInput.toFlowable(BackpressureStrategy.LATEST);
 
     //3. Record the output of the Flowable into the journal (note the different filter name)
@@ -425,9 +425,9 @@ See code snippet from the example below:
 ```
 
 You might have noticed that as well as the Slow Consumer subscribing to the Flowable to make
-sure it uses the LATEST strategy we also record the values we actaully consumer into RxJournal.
+sure it uses the LATEST strategy we also record the values we actaully consumer into ReactiveJournal.
 
-As with the plain RxJava implementation of LATEST (without RxJournal) the Slow Consumer
+As with the plain RxJava implementation of LATEST (without ReactiveJournal) the Slow Consumer
 only sees the latest updates from the Fast Producer. However if you use RxRecorder (as in this
 example) you have:
 * A full record of all the events that were emitted by the Fast Producer. 
@@ -438,12 +438,12 @@ in the `PlayOptions` when calling `play`.
 
 This leads to being ablse to try the following...
 
-#### RxJournalBackPressureTestingFasterConsumer
+#### ReactiveJournalBackPressureTestingFasterConsumer
 
-In this example we experiment by replaying the event stream recorded in `RxJournal` and 
+In this example we experiment by replaying the event stream recorded in `ReactiveJournal` and 
 observing the effects of lowering the latency of the SlowConsumer.
 
-We have a recording of the FastProducer created whilst running `RxJournalBackPressureBuffer`.
+We have a recording of the FastProducer created whilst running `ReactiveJournalBackPressureBuffer`.
 The SlowConsumer subscribes to this using a `Flowable` with `BackpressureStrategy.LATEST`
 as in the provious example.
 
@@ -484,10 +484,16 @@ Whilst this is a trivial example I'll let your imagination extend the scenarios
 to real world situations where this sort of ability to replay data against real
 load will be invaluable.
 
+| Option        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| replayRate      | right-aligned | $1600 |
+| filter    | centered      |   $12 |
+| using | are neat      |    $1 |
+
 ## Acknowlegments
 
 Special thanks to my friend and ex-collegue [Peter Lawrey](https://stackoverflow.com/users/57695/peter-lawrey)
-for inspiring me with his [Chronicle libraries](https://github.com/OpenHFT) which underpin RxJournal.
+for inspiring me with his [Chronicle libraries](https://github.com/OpenHFT) which underpin ReactiveJournal.
 
 To those behind [RxJava](https://github.com/ReactiveX/RxJava) in particular to 
 [Tomasz Nurkiewicz](http://www.nurkiewicz.com) for his talks and book which

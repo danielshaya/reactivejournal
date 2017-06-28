@@ -12,7 +12,7 @@ public class RxJavaPlayer<T> {
     private ReactivePlayer reactivePlayer;
 
     public RxJavaPlayer(ReactiveJournal reactiveJournal){
-        reactivePlayer = reactiveJournal.createRxPlayer();
+        reactivePlayer = reactiveJournal.createReactivePlayer();
     }
 
     public Flowable<T> play(PlayOptions options){

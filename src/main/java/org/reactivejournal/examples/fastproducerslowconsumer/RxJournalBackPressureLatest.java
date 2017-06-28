@@ -24,7 +24,7 @@ public class RxJournalBackPressureLatest {
         reactiveJournal.clearCache();
         Flowable<Long> fastProducer = FastProducerSlowConsumer.createFastProducer(BackpressureStrategy.MISSING, 2500);
 
-        ReactiveRecorder recorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder recorder = reactiveJournal.createReactiveRecorder();
         recorder.recordAsync(fastProducer,"input");
         //Set the replay strategy to ReplayRate.FAST as e want to process the event as soon as it is
         //received from the publisher.

@@ -38,7 +38,7 @@ public class ReactiveRecorderTest {
 
         //Pass the input stream into the rxRecorder which will subscribe to it and record all events.
         //The subscription will happen on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(observableInput, "input");
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();

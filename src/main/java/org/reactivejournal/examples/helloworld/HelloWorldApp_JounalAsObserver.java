@@ -11,8 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * An example class that demonstrates how use rxRecorder in with a cold Observable.
- * i.e. The Observable will only produce events in response to a subscribe.
+ * An example class that demonstrates how use ReactiveRecorder as a second subscriber
+ * to the flowableInput. i.e. The BytesToWordsProcessor subscribes to the flowableInput
+ * as does the ReactiveRecorder.
+ * Note that everything happens on the same thread.
  */
 public class HelloWorldApp_JounalAsObserver {
     private static final Logger LOG = LoggerFactory.getLogger(HelloWorldApp_JounalAsObserver.class.getName());
@@ -36,7 +38,7 @@ public class HelloWorldApp_JounalAsObserver {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated until 'connect' is called on the input stream.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.record(flowableInput, INPUT_FILTER);
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();
@@ -52,7 +54,6 @@ public class HelloWorldApp_JounalAsObserver {
         //Activate the subscriptions
         flowableInput.connect();
 
-        //Sometimes useful to see the recording written to a file
         reactiveJournal.writeToFile("/tmp/Demo/demo.txt",true);
     }
 }

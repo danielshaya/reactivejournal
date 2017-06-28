@@ -37,7 +37,7 @@ public class HelloWorldApp_JournalPlayThrough {
 
         //Pass the input stream into the reactiveRecorder which will subscribe to it and record all events.
         //The subscription will not be activated on a new thread which will allow this program to continue.
-        ReactiveRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
         reactiveRecorder.recordAsync(observableInput, INPUT_FILTER);
 
         BytesToWordsProcessor bytesToWords = new BytesToWordsProcessor();

@@ -19,7 +19,7 @@ public class ReactiveJournalDirectoryTest {
     @Before
     public void createDir() throws IOException {
         base = Files.createTempDirectory("ReactiveJournal");
-        expectedDir = base.resolve(ReactiveJournal.RXJOURNAL_DIRNAME);
+        expectedDir = base.resolve(ReactiveJournal.REACTIVE_JOURNAL_DIRNAME);
     }
 
     @After
@@ -48,7 +48,7 @@ public class ReactiveJournalDirectoryTest {
         ReactiveJournal journal = new ReactiveJournal(base.toString(), "foo");
 
         Assert.assertNotEquals(expectedDir.toString(), journal.getDir());
-        Assert.assertEquals(expectedDir.toString().replace(ReactiveJournal.RXJOURNAL_DIRNAME, "foo"), journal.getDir());
+        Assert.assertEquals(expectedDir.toString().replace(ReactiveJournal.REACTIVE_JOURNAL_DIRNAME, "foo"), journal.getDir());
     }
 
     @Test
@@ -61,7 +61,7 @@ public class ReactiveJournalDirectoryTest {
     @Test
     public void rxJournalCreatesDirOnRecording() throws IOException {
         ReactiveJournal journal = new ReactiveJournal(base.toString());
-        ReactiveRecorder recorder = journal.createRxRecorder();
+        ReactiveRecorder recorder = journal.createReactiveRecorder();
 
         Assert.assertFalse(Files.exists(expectedDir));
 
@@ -73,7 +73,7 @@ public class ReactiveJournalDirectoryTest {
     public void rxJournalClearsIfOnlyCq4Files() throws IOException {
         ReactiveJournal journal = new ReactiveJournal(base.toString());
 
-        ReactiveRecorder recorder = journal.createRxRecorder();
+        ReactiveRecorder recorder = journal.createReactiveRecorder();
         recorder.record(Flowable.just("foo"), "");
         Assert.assertTrue(Files.exists(expectedDir));
 
@@ -92,7 +92,7 @@ public class ReactiveJournalDirectoryTest {
 
         ReactiveJournal journal = new ReactiveJournal(base.toString());
 
-        ReactiveRecorder recorder = journal.createRxRecorder();
+        ReactiveRecorder recorder = journal.createReactiveRecorder();
         recorder.record(Flowable.just("foo"), "");
 
         //short circuit the test if the dir is unexpected, just in case the clearCache would then be too destructive
