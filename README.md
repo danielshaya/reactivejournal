@@ -245,6 +245,25 @@ Hello World Complete
 [main] INFO org.reactivejournal.impl.ReactiveJournal - Writing to dir complete
 ````
 
+## PlayOptions
+
+When playing back from ReactiveJournal there are a number of options that can be set summarised in the table below:
+They are explained more fully in the FAQ and in the [javadoc](https://github.com/danielshaya/reactivejournal/blob/master/src/main/java/org/reactivejournal/impl/PlayOptions.java) for `PlayOptions`
+
+| Option Name   | Values           | Default       | Description  |
+| ------------- |------------------| ------------- | -------------|
+| filter        | any string       | n/a           | All messages are written with a filter tag |
+| pauseStrategy | SPIN / YIELD     | YIELD         | Determines the pause strategy if no events in the journal |
+| playFromNow   | true / false     | false         | Only play message from now - ignore older messages |
+| playFromSeqNo | any long         | Long.MIN_VALUE| Only play messages from seqNo |
+| playUntilSeqNo| any long         | Long.MAX_VALUE| Only play messages until seqNo and then complete |
+| playFromTime  | any long         | Long.MIN_VALUE| Only play messages from time in millis |
+| playUntilTime | any long         | Long.MAX_VALUE| Only play messages until time in millis and then complete |
+| replayRate    | FAST / ACTUAL_TIME | FAST        | Play back messages fast or with the intervals they were recorded |
+| sameThread    | true / false     | false         | Play back messages on the subscriber thread or a new one |
+| using         | any Object       | null          | Use this Object to populate the message - save on GC |
+
+
 ## FAQ
 
 ### What types of data can be serialised by ReactiveJournal
@@ -560,12 +579,6 @@ The Slow Consumer has now managed to consume about 1000 events.
 Whilst this is a trivial example I'll let your imagination extend the scenarios
 to real world situations where this sort of ability to replay data against real
 load will be invaluable.
-
-| Option        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| replayRate      | right-aligned | $1600 |
-| filter    | centered      |   $12 |
-| using | are neat      |    $1 |
 
 ## Acknowlegments
 
