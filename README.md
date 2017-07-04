@@ -1,6 +1,6 @@
 # ReactiveJournal
 
-ReactiveJournal supports [Reactive](//todo) libraries by adding 
+ReactiveJournal supports [Reactive](http://www.reactive-streams.org/) libraries by adding 
 functionality to record and replay reactive streams. 
 
 ## Downloading the project
@@ -67,7 +67,7 @@ Testing is a primary motivation for ReactiveJournal. ReactiveJournal allows deve
 black box test their code by recording all inputs and outputs in and out of their programs.
 
 An obvious use case are unit tests where ReactiveJournal recordings can be used to create
-comprehensive tests (see [HelloWorldTest](todo) for an example). This example makes use of
+comprehensive tests (see [HelloWorldTest](https://github.com/danielshaya/reactivejournal/blob/master/src/main/java/org/reactivejournal/examples/helloworld/HelloWorldTest.java) for an example). This example makes use of
 `ReactiveValidator` which allows unit tests to compare their results against previously
 recorded results in the journal.
 
@@ -87,7 +87,7 @@ updates from the recorder. The remote connection (the 'listener') can optionally
 journal effecting a two way conversation or RPC. There can be multiple readers and writers to the
 journal.
 
-ReactiveJournal uses [Chronicle-Queue](todo) (a memory mapped file solution) 
+ReactiveJournal uses [Chronicle-Queue](https://github.com/OpenHFT/Chronicle-Queue/blob/master/README.adoc) (a memory mapped file solution) 
 serialisation meaning that
 the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
 in single digit micro seconds. 
@@ -119,7 +119,7 @@ keeping up with most feeds (typically writing in the order of 1,000,000/s). You 
 your data from ReactiveJournal knowing that the data is safely stored on disk without having to
 keep any data in memory buffers.
 
-See more about this topic below in the [Examples](todo) section
+See more about this topic below in the [Examples](https://github.com/danielshaya/reactivejournal/tree/master/src/main/java/org/reactivejournal/examples) section
 
 ## Design Goals
 
@@ -139,7 +139,7 @@ An `ReactiveJournal` is created as follows:
 The directory is the location where the serialised file will be created 
 
 ## Recording a reactive stream
-`ReactiveRecorder` allows any Reactive [`Publisher`](//todo) to be journaled to disk using 
+`ReactiveRecorder` allows any Reactive [`Publisher`](https://github.com/reactive-streams/reactive-streams-jvm/blob/master/api/src/main/java/org/reactivestreams/Publisher.java) to be journaled to disk using 
 the `record` function:
     
     ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
@@ -165,56 +165,83 @@ The data can be examined in plain ASCII using the writeToDisk function:
 
     reactiveJournal.writeToDisk(String fileName, boolean printToSdout)
 
-//todo new version od code
 ## Putting it together with HelloWorld
-
 
 Full code example code [HelloWorldApp](https://github.com/danielshaya/ReactiveJournal/blob/master/src/main/java/org/ReactiveJournal/examples/helloworld/HelloWorld.java).
 
 ```java
-    package org.reactivejournal.examples.helloworld;
-    
-    import io.reactivex.Flowable;
-    import io.reactivex.Observable;
-    import org.reactivejournal.impl.PlayOptions;
-    import org.reactivejournal.impl.ReactiveJournal;
-    import org.reactivejournal.impl.ReactivePlayer;
-    import org.reactivejournal.impl.ReactiveRecorder;
-    
-    import java.io.IOException;
-    
-    /**
-     * Simple Demo Program
-     */
-    public class HelloWorld {
-        public static void main(String[] args) throws IOException {
-            //Create the reactiveRecorder and delete any previous content by clearing the cache
-            ReactiveJournal reactiveJournal = new ReactiveJournal("/tmp/Demo");
-            reactiveJournal.clearCache();
-    
-            Flowable<String> helloWorldFlowable = Flowable.just("Hello World!!");
-            //Pass the flowable into the reactiveRecorder which will subscribe to it and record all events.
-            RxRecorder reactiveRecorder = reactiveJournal.createRxRecorder();
-            reactiveRecorder.record(helloWorldFlowable);
-    
-            RxPlayer reactivePlayer = reactiveJournal.createRxPlayer();
-            Observable recordedObservable = reactivePlayer.play(new PlayOptions());
-    
-            recordedObservable.subscribe(System.out::println);
-            
-            //Sometimes useful to see the recording written to a file
-            reactiveJournal.writeToFile("/tmp/Demo/demo.txt",true);
-        }
+package org.reactivejournal.examples.helloworld;
+
+import org.reactivejournal.impl.PlayOptions;
+import org.reactivejournal.impl.ReactiveJournal;
+import org.reactivejournal.impl.ReactiveRecorder;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
+import java.io.File;
+import java.io.IOException;
+
+/**
+ * Simple Demo Program
+ */
+public class HelloWorld {
+    private static final String tmpDir = System.getProperty("java.io.tmpdir");
+
+    public static void main(String[] args) throws IOException {
+        //1. Create the reactiveRecorder and delete any previous content by clearing the cache
+        ReactiveJournal reactiveJournal = new ReactiveJournal(tmpDir + File.separator + "HW");
+        reactiveJournal.clearCache();
+
+        //2. Create a HelloWorld Publisher
+        Publisher<String> helloWorldFlowable = subscriber -> {
+            subscriber.onNext("Hello World!");
+            subscriber.onComplete();
+        };
+
+        //3. Pass the Publisher into the reactiveRecorder which will subscribe to it and record all events.
+        ReactiveRecorder reactiveRecorder = reactiveJournal.createReactiveRecorder();
+        reactiveRecorder.record(helloWorldFlowable, "");
+
+        //4. Subscribe to ReactiveJournal and print out results
+        Publisher recordedObservable = reactiveJournal.createReactivePlayer().play(new PlayOptions());
+
+        recordedObservable.subscribe(new Subscriber() {
+            @Override
+            public void onSubscribe(Subscription subscription) {
+                subscription.request(Long.MAX_VALUE);
+            }
+
+            @Override
+            public void onNext(Object o) {
+                System.out.println(o);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                System.err.println(throwable);
+            }
+
+            @Override
+            public void onComplete() {
+                System.out.println("Hello World Complete");
+            }
+        });
+
+        //5. Sometimes useful to see the recording written to a file
+        reactiveJournal.writeToFile(tmpDir + File.separator + "/hw.txt",true);
     }
+}
 ```    
 The results of running this program can be seen below:
 
 ````
-[main] INFO org.reactivejournal.impl.ReactiveJournal - Deleting existing recording [/tmp/Demo]
-Hello World!!
-[main] INFO org.reactivejournal.impl.ReactiveJournal - Writing recording to dir [/tmp/Demo/demo.txt]
-[main] INFO org.reactivejournal.impl.ReactiveJournal - VALID	1	2017-05-19T08:52:27.156		Hello World!!
-[main] INFO org.reactivejournal.impl.ReactiveJournal - COMPLETE	2	2017-05-19T08:52:27.157		EndOfStream{}
+[main] INFO org.reactivejournal.impl.ReactiveJournal - Deleting existing recording [/tmp/HW/.reactiveJournal]
+Hello World!
+[main] INFO org.reactivejournal.impl.ReactiveJournal - Writing recording to dir [/tmp//hw.txt]
+Hello World Complete
+[main] INFO org.reactivejournal.impl.ReactiveJournal - VALID	1	1499202194782		Hello World!
+[main] INFO org.reactivejournal.impl.ReactiveJournal - COMPLETE	2	1499202194784		EndOfStream{}
 [main] INFO org.reactivejournal.impl.ReactiveJournal - Writing to dir complete
 ````
 
@@ -235,8 +262,8 @@ See [Chronicle Queue Docs](https://github.com/OpenHFT/Chronicle-Queue#restrictio
 
 ### How to use in conjunction with Reactive implementations such as RxJava and React?
 
-`ReactiveJava` has been designed be used with any [Reactive](//todo) implentation 
-such as [RxJava](//todo) and [React](//todo).
+`ReactiveJava` has been designed be used with any [Reactive](https://github.com/reactive-streams) implentation 
+such as [RxJava](https://github.com/ReactiveX/RxJava) and [Reactor](https://projectreactor.io/).
 
 For example if you had an RxJava `Flowable`, because `Flowable` implements `Publisher`, 
 you could use the `Flowable` as input to 
@@ -258,7 +285,7 @@ There are 2 ways you might want to set up your `ReactiveJournal`.
 into the critical path of
 your program. This will certainly be the setup if you are using ReactiveJournal 
 to handle back pressure.
-This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](todo)
+This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](https://github.com/danielshaya/reactivejournal/blob/master/src/main/java/org/reactivejournal/examples/helloworld/HelloWorldApp_JournalPlayThrough.java)
 
 2. Have `ReactiveJournal` as a second subscriber to your `Publisher`. This has the benefit
 of keeping all functions on the same thread. This might be the setup if you are using `ReactiveJournal`
@@ -266,7 +293,7 @@ to record data for testing purposes. If you are using RxJava you might want to u
 the `ConnectableObservable` paradigm
 as you won't want ReactiveRecorder kicking off the connection until
 all the other connections have been setup. 
-This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](todo)
+This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](https://github.com/danielshaya/reactivejournal/blob/master/src/main/java/org/reactivejournal/examples/helloworld/HelloWorldApp_JounalAsObserver.java)
 
 ### Play the stream in actual time or fast
 
