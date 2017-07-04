@@ -6,7 +6,7 @@ functionality to record and replay reactive streams.
 ## Downloading the project
 
 ### Maven
-ReactiveJournal is a Maven project so you can clone the project and build in the usual way.
+ReactiveJournal is a Maven project so you can `git clone` the project and build in the usual way.
 
 The intention is for this project to make its way into Maven Central (work in progress).
 
@@ -20,12 +20,50 @@ Once downloaded you can test that it works by running:
 ````
 java -cp ./ReactiveJournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorldUsingRxJava 
 ````
+## Why ReactiveJournal??
+
+Picture this scenario...
+
+You've just released your shiny new Reactive project. Streams of data start to flow into the system,
+your 'Reactives' are busy processing the data, enriching it, making decisions based on it, creating
+new streams of data for Reactives further down the line to consume. It's the well oiled engine of
+an F1 car, a
+thing of beauty, poetry in motion. Exactly what a Reactive system was designed to do.
+
+But then...
+
+Something starts going wrong. Perhaps data received isn't quite as clean as it should be, 
+the system gets dirty, components clog up and fail, data backs up. Processes slow down,
+before long we have total melt down. Our F1 engine is a heap a smouldering metal.
+
+But what went wrong... this is what we need to be able to our system:
+
+* Recreate the exact situation so that can step through it and understand
+where the root of the problem is.
+
+* Capture that scenario fix it and include it in a test case so that it never 
+happens again.
+
+* Monitor the slowdown of the system by observing the queues build up. Recover
+the system without losing any data in the meantime.
+
+* Deal with the surge in data that caused the component to start runing
+out of memory. 
+
+* Run multiple processes to process our data rather than relying on the one
+which went over.
+
+* All the above without slowing the system down or having to do any development.
+
+Journaling addresses all these points. ReactiveJournal was designed to makes journaling for 
+Reactive programs as simple as it could possible be.
+ 
 
 ## Primary Motivations Behind ReactiveJournal
 
 ### 1. Testing
 
-Testing is a primary motivation for `ReactiveJournal`. `ReactiveJournal` allows developers to
+Testing is a primary motivation for ReactiveJournal. ReactiveJournal allows developers to
 black box test their code by recording all inputs and outputs in and out of their programs.
 
 An obvious use case are unit tests where ReactiveJournal recordings can be used to create
@@ -34,12 +72,13 @@ comprehensive tests (see [HelloWorldTest](todo) for an example). This example ma
 recorded results in the journal.
 
 Another powerful use case is to enable users to replay production data into test systems. 
-By simply copying over the journal file from a production system and replaying all or part of the file
+By simply copying over the journal file from a production system and replaying 
+all or part of the file
 into a test system the exact conditions of the primary system will be reproduced.
 
 ### 2. Remote Connections
 
-`ReactiveJournal` can be recorded on one JVM and can be replayed (in real-time if required) 
+ReactiveJournal can be recorded on one JVM and can be replayed (in real-time if required) 
 on one or more 
 JVMs provided they have access to the journal file location.  
 
@@ -48,7 +87,7 @@ updates from the recorder. The remote connection (the 'listener') can optionally
 journal effecting a two way conversation or RPC. There can be multiple readers and writers to the
 journal.
 
-`ReactiveJournal` uses [Chronicle-Queue](todo) (a memory mapped file solution) 
+ReactiveJournal uses [Chronicle-Queue](todo) (a memory mapped file solution) 
 serialisation meaning that
 the process of moving data from one JVM to another is exceedingly efficient and can be achieved 
 in single digit micro seconds. 
@@ -56,6 +95,11 @@ in single digit micro seconds.
 If you need to pass data between JVMs on the same machine this is not only the most efficient way 
 to do so but you will also provide you with a full recording of the data that is 
 transferred between the JVMs.
+
+Setting up remote listeners allows a system to have live (hot) backup processes.  Another
+powerful strategy is to set
+up processes running different code bases so that you can live test new code or play with 
+alternative algorithms and compare results with the exisiting sytem.
 
 ### 3. Slow consumers (handling back pressure)
 
@@ -69,6 +113,11 @@ transactional manner this will not be an option. Two, you may run out of memory 
 buffers get really big. At the very least you will probably need to run your JVM with a large
 memory setting that many be inefficient. For latency sensitive applications it will 
 put pressure on the GC which will not be acceptable.
+
+In such scenarios you can publish your data to ReactiveJournal which shouldn't have any problems
+keeping up with most feeds (typically writing in the order of 1,000,000/s). You can then read
+your data from ReactiveJournal knowing that the data is safely stored on disk without having to
+keep any data in memory buffers.
 
 See more about this topic below in the [Examples](todo) section
 
@@ -191,14 +240,13 @@ such as [RxJava](//todo) and [React](//todo).
 
 For example if you had an RxJava `Flowable`, because `Flowable` implements `Publisher`, 
 you could use the `Flowable` as input to 
-`ReactiveRecorder.record()` which takes a `Publisher`. If you have an RxJava
+`ReactiveRecorder.record()` which takes a `Publisher`. ()If you have an RxJava
 `Observable` you would have to convert it to a `Flowable` with `Observable.toFlowable()`
-first.
+first.)
 
 `ReactivePlayer` returns a `Publisher` that can be converted to `Flowable` with
  `Flowable.fromPublisher(reactivePlayer.play(options))`. There is utility class
  `RxPlayer` that does this for the RxJava user. 
-
 
 
 ### ReactiveJournal on the critical path or as another subscriber 
@@ -206,8 +254,10 @@ first.
 There are 2 ways you might want to set up your `ReactiveJournal`.
 
 1. Record your `Publisher` input into `ReactiveJournal` and then subscribe to
-`ReactiveJournal` for its stream of events. This effectively inserts `ReactiveJournal` into the critical path of
-your program. This will certainly be the setup if you are using ReactiveJournal to handle back pressure.
+`ReactiveJournal` for its stream of events. This effectively inserts `ReactiveJournal` 
+into the critical path of
+your program. This will certainly be the setup if you are using ReactiveJournal 
+to handle back pressure.
 This is demonstrated in the example program [HelloWorldApp_JournalPlayThrough](todo)
 
 2. Have `ReactiveJournal` as a second subscriber to your `Publisher`. This has the benefit
@@ -223,16 +273,16 @@ This is demonstrated in the example program [HelloWorldApp_JounalAsObserver](tod
 The `RxPlayer` can `play` in two modes:
 * `ACTUAL_TIME` This plays back the stream preserving the time gaps between the events. This is
 important for back testing and reproducing exact conditions in unit tests.
-* `FAST` This plays the events as soon as they are recieved. Use this when you are using 
+* `FAST` This plays the events as soon as they are received. This mode should be set when you are using 
 ReactiveJournal for remote connections or when using RxJounal to deal with back pressure.
 
 ### Can ReactiveJournal be used in a low latency environment
 
 The intention is for `ReactiveJournal` to support low latency programs. The two main features to allow
 for this are:
-* Dedicating a CPU core to RxPlayer by using the FAST setting described above so that we don't have 
-any context switching.
-* Setting the PlayOptions.using() so that there is no allocation for new events. This should enable
+* Dedicating a CPU core to RxPlayer by using the `PlayOptions.setPauseStrategy(PauseStrategy.SPIN)` 
+setting so that we don't have any context switching on the thread reading from the journal.
+* Setting the `PlayOptions.using()` so that there is no allocation for new events. This should enable
 programs to be written that have minimal GC impact, critical for reliable low latency.
 
 ## Examples

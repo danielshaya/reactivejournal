@@ -1,12 +1,15 @@
 package queue;
 
+import net.openhft.chronicle.core.UnsafeMemory;
 import net.openhft.chronicle.queue.ChronicleQueue;
 import net.openhft.chronicle.queue.ExcerptAppender;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.ValueIn;
 import org.reactivejournal.util.DSUtil;
+import sun.misc.Unsafe;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 
 /**
@@ -29,20 +32,41 @@ public class QueuePlayGround {
 
         try (ChronicleQueue queue = SingleChronicleQueueBuilder.binary(file).build()) {
             final ExcerptAppender appender = queue.acquireAppender();
-                appender.writeDocument(w -> {
-                    w.getValueOut().int64(System.currentTimeMillis());
-                    w.getValueOut().throwable(throwable);
-                });
-        }
 
-        try (ChronicleQueue queue = SingleChronicleQueueBuilder.binary(file).build()) {
+            appender.writeBytes(b -> {
+                long address = b.address(b.writePosition());
+                Unsafe unsafe = UnsafeMemory.UNSAFE;
+                unsafe.putByte(address, (byte) 0x12);
+                address += 1;
+                unsafe.putInt(address, 0x345678);
+                address += 4;
+                unsafe.putLong(address, 0x999000999000L);
+                address += 8;
+                byte[] bytes = "Hello World".getBytes(StandardCharsets.ISO_8859_1);
+                unsafe.putByte(address, (byte)bytes.length);
+                address += 1;
+                unsafe.copyMemory(bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, null, address, bytes.length);
+                b.writeSkip(1 + 4 + 8 + bytes.length);
+            });
+
+
             final ExcerptTailer tailer = queue.createTailer();
-            tailer.readDocument(w -> {
-                ValueIn in = w.getValueIn();
-                long time = in.int64();
-                Throwable t = in.throwable(true);
-                t.printStackTrace();
-                System.out.println(t);
+            tailer.readBytes(b -> {
+                long address = b.address(b.readPosition());
+                Unsafe unsafe = UnsafeMemory.UNSAFE;
+                int code = unsafe.getByte(address);
+                address++;
+                int num = unsafe.getInt(address);
+                address += 4;
+                long num2 = unsafe.getLong(address);
+                address += 8;
+                int length = unsafe.getByte(address);
+                address++;
+                byte[] bytes = new byte[length];
+                unsafe.copyMemory(null, address, bytes, Unsafe.ARRAY_BYTE_BASE_OFFSET, bytes.length);
+                String text = new String(bytes, StandardCharsets.ISO_8859_1);
+                System.out.println(text);
+                // do something with values
             });
         }
 
