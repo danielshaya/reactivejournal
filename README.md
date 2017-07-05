@@ -16,7 +16,6 @@ can download with the ReactiveJournal classes and all dependencies.
 
 Once downloaded you can test that it works by running:
 
-//todo update this when release
 ````
 java -cp ./reactivejournal-x.x.x.jar org.reactivejournal.examples.helloworld.HelloWorld 
 ````
